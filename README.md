@@ -9,6 +9,7 @@ Skills work in Cowork (the Claude desktop app) and in [Claude Code](https://docs
 | Skill | Description |
 |-------|-------------|
 | [code-optimization](./code-optimization) | Analyze a codebase for maintainability, propose and prioritize refactors, then implement them safely on a dev branch with tracked issues and a review-ready PR. Pure refactoring only — never changes behavior or weakens security. |
+| [code-review](./code-review) | Review a pull request with a panel of independent agents, score every finding for confidence, and post only what survives the filter. Comes in two depths — a full five-dimension review, and a quick two-dimension pass for a fast look. |
 
 ## Installing a skill
 
