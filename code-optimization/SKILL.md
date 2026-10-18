@@ -1,6 +1,6 @@
 ---
 name: code-optimization
-description: Analyze a codebase for maintainability, propose and prioritize refactors, then implement them safely with tracked issues and a review-ready PR. Use whenever the user wants to optimize, clean up, refactor, or improve the maintainability of code — split large files, extract functions into separate files, reduce file/line counts, or otherwise make a project easier to maintain — especially when they also want issues/sub-issues created, work done on a dev branch with tests, and a PR opened for review. Also use for the standalone "review this PR" ask. Works with GitHub, GitLab, or any issue/PR tooling that's available. This is a refactoring skill: it never changes what the code does or weakens security.
+description: "Analyze a codebase for maintainability, propose and prioritize refactors, then implement them safely with tracked issues and a review-ready PR. Use whenever the user wants to optimize, clean up, refactor, or improve the maintainability of code — split large files, extract functions into separate files, reduce file/line counts, or otherwise make a project easier to maintain — especially when they also want issues/sub-issues created, work done on a dev branch with tests, and a PR opened for review. Also use for the standalone \"review this PR\" ask. Works with GitHub, GitLab, or any issue/PR tooling that's available. This is a refactoring skill: it never changes what the code does or weakens security."
 ---
 
 # Code Optimization
