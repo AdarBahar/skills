@@ -1,0 +1,74 @@
+name: Sync react-best-practices from upstream
+
+# Copies skills/react-best-practices from vercel-labs/agent-skills into
+# react-best-practices/. Opens a pull request when the copy differs.
+# A person reads the diff and merges it. Nothing lands on main by itself.
+
+on:
+  schedule:
+    - cron: "30 6 * * 1" # Monday 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  UPSTREAM_REPO: vercel-labs/agent-skills
+  UPSTREAM_PATH: skills/react-best-practices
+  LOCAL_PATH: react-best-practices
+  SYNC_BRANCH: sync/react-best-practices
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch the upstream folder
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse "https://github.com/${UPSTREAM_REPO}.git" /tmp/upstream
+          git -C /tmp/upstream sparse-checkout set "${UPSTREAM_PATH}"
+          echo "UPSTREAM_SHA=$(git -C /tmp/upstream rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Copy the folder
+        run: |
+          rsync -a --delete --exclude UPSTREAM.md "/tmp/upstream/${UPSTREAM_PATH}/" "${LOCAL_PATH}/"
+          git add -A "${LOCAL_PATH}"
+          if git diff --cached --quiet; then
+            echo "CHANGED=0" >> "$GITHUB_ENV"
+            echo "No change. The copy matches upstream ${UPSTREAM_SHA}."
+          else
+            echo "CHANGED=1" >> "$GITHUB_ENV"
+            git diff --cached --stat
+          fi
+
+      - name: Push the sync branch
+        if: env.CHANGED == '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${SYNC_BRANCH}"
+          git commit -m "Sync react-best-practices from ${UPSTREAM_REPO}@${UPSTREAM_SHA:0:7}"
+          git push --force origin "${SYNC_BRANCH}"
+
+      - name: Open the pull request if none is open
+        if: env.CHANGED == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open_count=$(gh pr list --head "${SYNC_BRANCH}" --state open --json number --jq length)
+          if [ "${open_count}" != "0" ]; then
+            echo "A pull request for ${SYNC_BRANCH} is already open. The branch was updated."
+            exit 0
+          fi
+          gh pr create \
+            --base main \
+            --head "${SYNC_BRANCH}" \
+            --title "Sync react-best-practices from upstream" \
+            --body "Automatic copy of \`${UPSTREAM_PATH}\` from https://github.com/${UPSTREAM_REPO} at commit ${UPSTREAM_SHA}.
+
+          Read the diff before you merge. A new upstream commit can change what Claude does."

@@ -21,6 +21,7 @@ Each skill is in its own folder. The folder has a `SKILL.md` file, which contain
 | [code-review](./code-review) | Reviews a pull request with a panel of independent agents. It scores each finding and posts only the findings that pass. A full review uses five checks and gives a merge verdict. A quick review uses one or two. If you name no mode, it picks the depth from the size of the PR. | "Review PR #42." · "Run a quick code review on this PR." |
 | [code-optimization](./code-optimization) | Makes code easier to maintain. It finds the files to improve and makes issues. It refactors on a work branch with tests before and after, and it opens a PR. It does not change what the code does. It does not weaken security. | "Optimize this project for maintainability." |
 | [security-audit](./security-audit) | Audits code for security vulnerabilities that cross a trust boundary. It gives the source evidence, a safe reproduction, a priority, and a fix. Full audits write reports. It never runs target code without a sandbox. It never touches a production host without approval. Adapted from Cloudflare's MIT-licensed skill. | "Security audit this codebase." · "Find security issues in ./src." |
+| [react-best-practices](./react-best-practices) | React and Next.js performance rules from Vercel. A copy of a third-party skill. See "Third-party skills" below. | "Review this React component for performance." |
 
 Each skill folder has a README with the full details.
 
@@ -60,6 +61,16 @@ Then run `git pull` in the clone to get the newest version.
 - `code-review` needs the [GitHub CLI](https://cli.github.com) (`gh auth login`).
 - `code-optimization` works with GitHub (`gh`), GitLab (`glab`) or an issue tracker connector. If none is available, it writes the issues as Markdown files.
 - `security-audit` needs [Node.js](https://nodejs.org) for its validators. It needs an isolated sandbox to run any target code.
+
+## Third-party skills
+
+Some folders are copies of skills from other repositories. Each one has an `UPSTREAM.md` file that names the source and the license.
+
+| Folder | Source | License |
+|---|---|---|
+| `react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), folder `skills/react-best-practices` | MIT |
+
+Do not edit a copied folder. A workflow in `.github/workflows/` copies the upstream folder once a week. If the copy differs, the workflow opens a pull request. Read the diff, then merge it. The prose of a copied skill is not in ASD-STE100, because a rewrite would be lost at the next sync.
 
 ## Add a skill
 
