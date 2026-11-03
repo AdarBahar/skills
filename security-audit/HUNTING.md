@@ -160,8 +160,27 @@ file separately:
 
 Local execution is for confirmation. It is not for impact expansion:
 
-- **Allowed only in the required OS sandbox:** offline builds with the dependencies that are present; isolated-loopback processes that use dummy state; unit and integration tests; small fixture processing; sanitizers. Also allowed: bounded fuzz and regression tests; deterministic concurrency checks; local browser and emulator tests with dummy accounts; rendered manifests and policy evaluation with dummy identities; mocked external or paid calls.
-- **Disallowed:** live or deployed traffic; requests to services that you did not start for this isolated check; network installation of dependencies; real accounts or credentials; production data. Also disallowed: shared queues, cloud resources, runners, registries, signing or release services; publication; stress, saturation, or cost generation; any work after the minimum dummy-data boundary result.
+- **Allowed only in the required OS sandbox:**
+  - offline builds with the dependencies that are present;
+  - isolated-loopback processes that use dummy state;
+  - unit and integration tests;
+  - small fixture processing;
+  - sanitizers;
+  - bounded fuzz and regression tests;
+  - deterministic concurrency checks;
+  - local browser and emulator tests with dummy accounts;
+  - rendered manifests and policy evaluation with dummy identities;
+  - mocked external or paid calls.
+- **Disallowed:**
+  - live or deployed traffic;
+  - requests to services that you did not start for this isolated check;
+  - network installation of dependencies;
+  - real accounts or credentials;
+  - production data;
+  - shared queues, cloud resources, runners, registries, signing or release services;
+  - publication;
+  - stress, saturation, or cost generation;
+  - any work after the minimum dummy-data boundary result.
 
 The sandbox starts with an empty environment. It gives target code no external network and no writable host path. It enforces explicit low resource and time limits for every check, not only for checks that are expected to be expensive. Scratch output stays target-controlled after exit. Promote it only with the host procedure in `SKILL.md`. That procedure is no-follow, path-confined, regular-file, and bounded-size. A missing sandbox or promotion capability does not erase a source-grounded candidate. Represent the exact blocker in `needs_validation`.
 
@@ -248,7 +267,17 @@ Immediately after each hunter wave, spend the reserved invocation on one fresh `
 }
 ```
 
-The critic checks for these items: unmapped entry points, unchecked parallel paths, missing lifecycle modes, selected companion classes without a unit, unjustified exclusions, units closed without paths or checks, and prior `needs_validation` or changed-source gaps that no unit addresses. It proposes coverage, not findings. `stop` is the own assessment of the critic. It is `true` only when the critic accepts no `missing_units` and no `reassign_ids`. The loop condition below decides whether another wave runs. `stop` alone does not decide this. For each fingerprint in `resolved_prior_leads`, the parent marks the linked unit or prior-lead entry resolved. The parent records the source-backed reason of the critic.
+The critic checks for these items:
+
+- unmapped entry points;
+- unchecked parallel paths;
+- missing lifecycle modes;
+- selected companion classes without a unit;
+- unjustified exclusions;
+- units closed without paths or checks;
+- prior `needs_validation` or changed-source gaps that no unit addresses.
+
+It proposes coverage, not findings. `stop` is the own assessment of the critic. It is `true` only when the critic accepts no `missing_units` and no `reassign_ids`. The loop condition below decides whether another wave runs. `stop` alone does not decide this. For each fingerprint in `resolved_prior_leads`, the parent marks the linked unit or prior-lead entry resolved. The parent records the source-backed reason of the critic.
 
 The parent rejects proposed units that are outside the review scope or the source/local boundary. It derives canonical IDs for accepted units and deduplicates them against the current units. A prior same-source completed unit can supply evidence. Prior `deferred`, `blocked`, `out_of_scope`, or changed-source units become current work. They never suppress an accepted unit. Fail on a canonical ID collision. Do not merge it. For each legitimate `reassign_id` with live `blocked`, `covered`, or `candidate` evidence, append that exact terminal record to the `attempts` of the unit, with the source-backed `reassignment_reason` of the critic. Preserve its owner, checks, artifacts, fingerprints, and unresolved facts in that archive. Increment the live `wave`.
 

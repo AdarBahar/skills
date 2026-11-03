@@ -69,10 +69,39 @@ A successful challenge upgrades the wrong session, account, tenant, action, or A
 At registration, bind these items to the session that starts the registration: the challenge, the RP ID, the expected origin, the credential, the user and userHandle, the algorithm, and the user verification that the policy requires. At authentication, verify the challenge, the RP and origin, the credential membership, the signature, and the intended user presence or verification. Check the account-discovery and linking flows for userHandle or credential-to-account confusion. Handling of the signature counter is meaningful only when the product treats regressions as a clone signal.
 
 **Account linking and identity collision**
-The code adds an IdP, a passkey, an email, a phone, a device, or an external account to an existing account. This action must require a current authenticated session. It must require verified ownership of the new identity. It must require the step-up that policy requires. It must require callback state that is bound to the account that starts the linking. Review the unlink, relink, and invite-acceptance paths for collisions of verified identifiers or tenants.
+The code adds one of these to an existing account:
+- an IdP
+- a passkey
+- an email
+- a phone
+- a device
+- an external account
+
+This action must require all of these:
+- a current authenticated session
+- verified ownership of the new identity
+- the step-up that policy requires
+- callback state that is bound to the account that starts the linking
+
+Review the unlink, relink, and invite-acceptance paths for collisions of verified identifiers or tenants.
 
 **Password reset and broader recovery**
-Recovery tokens, support and admin recovery, backup codes, device migration, and email or phone change often become the weakest authentication path. Verify these items: the token randomness, the user and action binding, the expiry, the one-time state, the rate and accounting controls, and the trust of the delivery URL. Also verify that the code invalidates prior tokens and sessions. Different responses that only reveal public account existence are not automatically security findings.
+These recovery paths often become the weakest authentication path:
+- recovery tokens
+- support and admin recovery
+- backup codes
+- device migration
+- email or phone change
+
+Verify these items:
+- the token randomness
+- the user and action binding
+- the expiry
+- the one-time state
+- the rate and accounting controls
+- the trust of the delivery URL
+
+Also verify that the code invalidates prior tokens and sessions. Different responses that only reveal public account existence are not automatically security findings.
 
 ## API-key and mTLS attack classes (subagent_type: `general`)
 

@@ -2,7 +2,20 @@
 
 #### When to use this file
 
-Use this file when the target uses gRPC, GraphQL transports, Cap'n Proto, Thrift, Protobuf, custom binary protocols, streaming RPC, webhooks, brokers, queues, pub/sub, or event buses.
+Use this file when the target uses any of these:
+
+- gRPC
+- GraphQL transports
+- Cap'n Proto
+- Thrift
+- Protobuf
+- custom binary protocols
+- streaming RPC
+- webhooks
+- brokers
+- queues
+- pub/sub
+- event buses
 
 This file covers peer identity, logical message interpretation, routing, replay, ordering, and delivery semantics. Use `MEMORY-SAFETY-AND-BINARY.md` for parser memory safety. Use `WEB-PROTOCOL-AND-AUTH.md` for HTTP framing. Use `RESOURCE-EXHAUSTION-AND-AVAILABILITY.md` for availability impact.
 
@@ -41,12 +54,31 @@ mTLS, workload identity, bearer metadata, forwarded identity, or broker credenti
 A stream, subscription, batch, or bulk message is authorized one time. Later items then name different resources, or continue after the revocation of a role, membership, or token. Check again where the scope can change. Bind subscriptions to their original principal.
 
 **Callback and reply-correlation confusion**
-Correlation IDs that are predictable, reused, or cross-tenant let a response, webhook, cancellation, or acknowledgment satisfy the pending operation of another caller. Bind each outstanding request to the authenticated peer, tenant, operation, and lifecycle.
+A correlation ID can be predictable, reused, or cross-tenant. Then any of these can satisfy the pending operation of another caller:
+
+- a response
+- a webhook
+- a cancellation
+- an acknowledgment
+
+Bind each outstanding request to all of these:
+
+- the authenticated peer
+- the tenant
+- the operation
+- the lifecycle
 
 ## Broker and queue isolation attack classes (subagent_type: `general`)
 
 **Topic, routing-key, and subscription scope gaps**
-A publisher or subscriber can select the topic, wildcard, consumer group, partition, reply queue, or dead-letter route of another tenant. Check the broker-enforced ACLs where visible. Check the application-side namespace construction. Tenant text inside a payload is not isolation.
+A publisher or subscriber can select any of these items of another tenant:
+
+- the topic
+- the wildcard
+- the consumer group
+- the partition
+- the reply queue
+- the dead-letter route Check the broker-enforced ACLs where visible. Check the application-side namespace construction. Tenant text inside a payload is not isolation.
 
 **Dead-letter, retry, and diagnostic disclosure**
 Messages sent to dead-letter queues, error topics, traces, or operator views contain secrets or cross-tenant payloads. A lower-trust consumer can access these. Review the policy and redaction at the failure path, and not only at normal delivery.

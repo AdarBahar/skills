@@ -2,7 +2,17 @@
 
 #### When to use this file
 
-Use this file when untrusted requests, messages, files, tenant state, or agent work can consume CPU, memory, disk, connections, worker slots, paid APIs, or queue capacity. Also use it when such input can deadlock or crash a shared service. This domain distinguishes a source-reviewable availability vulnerability from a general performance issue. Never validate by stress on a shared or live service.
+Use this file when untrusted requests, messages, files, tenant state, or agent work can consume any of these:
+
+- CPU
+- memory
+- disk
+- connections
+- worker slots
+- paid APIs
+- queue capacity
+
+Also use it when such input can deadlock or crash a shared service. This domain distinguishes a source-reviewable availability vulnerability from a general performance issue. Never validate by stress on a shared or live service.
 
 Use `MEMORY-SAFETY-AND-BINARY.md` for memory-integrity defects. Use `PROTOCOLS-RPC-AND-MESSAGING.md` for broker delivery logic. A reachable fatal error belongs here for shared impact, even when another file covers the underlying parser.
 
@@ -19,7 +29,17 @@ Use `MEMORY-SAFETY-AND-BINARY.md` for memory-integrity defects. Use `PROTOCOLS-R
 ## Computational amplification attack classes (subagent_type: `general`)
 
 **Superlinear parsing, matching, or evaluation**
-A small accepted input drives catastrophic regex backtracking, nested parsing, recursive validation, symbolic evaluation, graph traversal, template expansion, or adversarial sort/hash behavior. Derive the accepted depth/cardinality and the complexity. Then demonstrate a bounded growth curve locally.
+A small accepted input drives any of these:
+
+- catastrophic regex backtracking
+- nested parsing
+- recursive validation
+- symbolic evaluation
+- graph traversal
+- template expansion
+- adversarial sort/hash behavior
+
+Derive the accepted depth/cardinality and the complexity. Then demonstrate a bounded growth curve locally.
 
 **Decompression and representation amplification**
 Compressed, sparse, nested, aliased, or encoded input expands far beyond the checked transfer size or file size. Verify the limits after every expansion and across parser stages. This includes archives, images, fonts, structured documents, and protocol compression tables.
@@ -30,7 +50,19 @@ A small request creates broad scans, pathological joins, fan-out, unbounded sort
 ## Resource accumulation attack classes (subagent_type: `general`)
 
 **Unbounded buffering and cardinality**
-Bodies, out-of-order streams, uploads, sessions, unique cache keys, metrics labels, log fields, subscriptions, or pending jobs accumulate without per-item and aggregate limits. Find the cleanup and expiration on disconnect, timeout, cancellation, and partial parse.
+Any of these items accumulate without per-item and aggregate limits:
+
+- bodies
+- out-of-order streams
+- uploads
+- sessions
+- unique cache keys
+- metrics labels
+- log fields
+- subscriptions
+- pending jobs
+
+Find the cleanup and expiration on disconnect, timeout, cancellation, and partial parse.
 
 **File descriptor, handle, and temporary-resource leaks**
 Malformed or canceled work misses cleanup. It then retains sockets, files, database cursors, timers, subprocesses, temporary files, or object references. Confirm that the leak repeats through bounded local iterations and affects a shared pool.
@@ -52,7 +84,17 @@ Low-priority or attacker-controlled jobs hold shared locks, workers, database po
 ## Failure and recovery attack classes (subagent_type: `general`)
 
 **Reachable fatal error or deadlock**
-An untrusted input reaches `panic`, abort, fatal assertion, unhandled exception, process exit, lock cycle, or infinite loop in a shared process. Confirm the supervisor scope. Confirm if one worker or the whole service becomes unavailable. A restarted isolated worker can reduce the impact but does not remove the defect.
+An untrusted input reaches any of these in a shared process:
+
+- `panic`
+- abort
+- fatal assertion
+- unhandled exception
+- process exit
+- lock cycle
+- infinite loop
+
+Confirm the supervisor scope. Confirm if one worker or the whole service becomes unavailable. A restarted isolated worker can reduce the impact but does not remove the defect.
 
 **Retry storm and fail-open amplification**
 Timeouts, dependency errors, partially processed messages, or health-check failures cause synchronized or unbounded retries. The retries have no jitter, ceilings, circuit breaking, or deduplication. Verify that one bounded failure source can create persistent aggregate work.
@@ -61,7 +103,12 @@ Timeouts, dependency errors, partially processed messages, or health-check failu
 One malformed record or message fails repeatedly at the front of a shared queue, partition, startup scan, migration, or recovery loop. Review the skip/quarantine policy and the offsets. Check if other tenants share the blocked unit.
 
 **Unsafe recovery and capacity rollback**
-A restart, restore, fallback, or cleanup path rebuilds unbounded state, ignores current quotas, or restores the input that immediately repeats the failure. The correctness of recovery is part of availability.
+A restart, restore, fallback, or cleanup path does any of these:
+
+- It rebuilds unbounded state.
+- It ignores current quotas.
+- It restores the input that immediately repeats the failure.
+ The correctness of recovery is part of availability.
 
 ## Universal moves (apply across the above)
 

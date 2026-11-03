@@ -53,7 +53,16 @@ Externally reachable operations acquire locks in an inconsistent order. Alternat
 The caller and the callee disagree on these points: who allocates, frees, pins, or changes a buffer; how long a pointer stays valid; and if a length is in bytes or in elements. Trace both sides of every `extern`, CGo/JNI/Python/native binding, and generated wrapper. Check null, zero length, aliasing, and callback retention.
 
 **Layout, alignment, and enum disagreement**
-Foreign code receives a struct, a bitfield, a packed record, a callback signature, an integer width, an enum, or a calling convention. These differ by architecture or build flag. Verify `repr`, packing, alignment, endianness, and ABI-specific types. You can confirm a declaration mismatch in the repository locally. An opaque foreign implementation requires `needs_validation`.
+Foreign code receives one of these items:
+- a struct
+- a bitfield
+- a packed record
+- a callback signature
+- an integer width
+- an enum
+- a calling convention
+
+These differ by architecture or build flag. Verify `repr`, packing, alignment, endianness, and ABI-specific types. You can confirm a declaration mismatch in the repository locally. An opaque foreign implementation requires `needs_validation`.
 
 **Unwind, exception, and thread-affinity violations**
 Exceptions or panics cross an ABI that forbids unwinding. Alternatively, callbacks run after teardown. Alternatively, code calls APIs that require one runtime thread from another thread. Review the error conversion and the cancellation. Confirm if the process aborts or if the state is corrupted before you assign impact.
@@ -61,7 +70,13 @@ Exceptions or panics cross an ABI that forbids unwinding. Alternatively, callbac
 ## Binary loading and runtime attack classes (subagent_type: `general`)
 
 **Library, plugin, and executable search-order trust**
-A privileged process loads a library, a plugin, a runtime image, or a helper from a path that a less-trusted principal can write. Alternatively, it resolves a bare name through a working directory or environment that an attacker can influence. Compare the intended installation ownership with each fallback and compatibility search path. A user who loads their own plugin into their own process is not a boundary violation.
+A privileged process loads one of these from a path that a less-trusted principal can write:
+- a library
+- a plugin
+- a runtime image
+- a helper
+
+Alternatively, it resolves a bare name through a working directory or environment that an attacker can influence. Compare the intended installation ownership with each fallback and compatibility search path. A user who loads their own plugin into their own process is not a boundary violation.
 
 **Missing artifact identity or signature binding**
 A loader verifies one file or metadata record, but it maps a different image. The path resolution, the file replacement, the architecture slices, or the embedded resources are not bound to the check. `SUPPLY-CHAIN-AND-RELEASE.md` covers the authenticity of the supply channel. This class covers the local gap between verification and map.
@@ -84,7 +99,13 @@ A syscall, an ioctl, a driver, or a kernel parser derives a trusted fact from us
 Externally reachable objects have unbalanced retain and release, a teardown without observer drain, or unchecked selector or table indices. Duplicated compatibility paths can also omit a guard. Compare each dispatch path and free path side by side.
 
 **Under-authorized powerful interfaces**
-A device node, an admin socket, a helper, or a management API validates the shape but not the authority of the caller over the resource. Establish the actual interface ownership and reachability. If permissions or sandbox policy outside the repository decide the result, the candidate is `needs_validation`.
+These interfaces validate the shape but not the authority of the caller over the resource:
+- a device node
+- an admin socket
+- a helper
+- a management API
+
+Establish the actual interface ownership and reachability. If permissions or sandbox policy outside the repository decide the result, the candidate is `needs_validation`.
 
 ## Universal moves (apply across the above)
 

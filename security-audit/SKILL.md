@@ -130,7 +130,12 @@ No single pass is complete. Build a deterministic coverage plan before hunting. 
 If prior runs exist, read every compatible `coverage-ledger.json` and `findings.json`. Read them before you plan the current run:
 
 1. Compare the relevant current source with each prior record and unit. A prior source ref alone is not evidence that a path is unchanged.
-2. Carry a prior `confirmed` record into the current candidate set only when its relevant source and conditions are unchanged and its evidence still meets the current contract. Link it to a current ledger unit that is seeded `planned`. Preserve its fingerprint. Exclude only that carried root cause from hunters. Send the carried record through the current final verification path. The Phase 3 verifier that re-checks it becomes the assignment owner of that unit and moves the unit to `candidate`.
+2. Carry a prior `confirmed` record into the current candidate set only when all of these conditions are true:
+   - Its relevant source is unchanged.
+   - Its relevant conditions are unchanged.
+   - Its evidence still meets the current contract.
+
+   Link it to a current ledger unit that is seeded `planned`. Preserve its fingerprint. Exclude only that carried root cause from hunters. Send the carried record through the current final verification path. The Phase 3 verifier that re-checks it becomes the assignment owner of that unit and moves the unit to `candidate`.
 3. When the relevant source for a prior `confirmed` record changed, create a current planned revalidation unit. Do not put that record on the hunter exclusion list. The record stays confirmed only if current independent validation establishes the current path and result.
 4. Make prior `needs_validation`, `deferred`, `blocked`, `out_of_scope`, and any changed-source unit current work. You may carry a still-external `needs_validation` record only after you check the current source trace. Link it by fingerprint to a current `planned` unit. The verifier re-check of that unit supplies its owner and evidence. The record keeps the unresolved blocker. These prior states never suppress a current unit.
 5. A prior same-source covered unit can inform the priority, but it stays visible in the current ledger. A prior `rejected` record suppresses only the unchanged failed claim. It does not suppress coverage of its unit. Changed evidence creates current work.
@@ -169,7 +174,15 @@ Spend the budget in this order:
 3. Assign hunters to units in priority order until the hunting allowance is spent. Spend the reserved post-wave critic immediately after that wave. Keep the final-clean reserve and the validation reserve intact.
 4. Before a later wave, reserve its new post-wave critic again. Check whether the remaining budget covers the required critic calls and the validation reserve. If it does not, launch no hunters from that wave. Mark its planned units `deferred` with reason `budget_cannot_reserve_critics_and_validation`. Use the retained final-clean critic to record the resulting gap.
 
-Before wave 1, update the pre-recon estimate with the seeded units, the implied hunter count, the mandatory critic calls, the validation reserve, and whether the remaining budget covers the plan. If the budget clearly cannot cover the plan, say so. Propose a tighter scope or a coarser profile. Do not silently thin the evidence. If later facts consume the required final-critic reserve, launch no hunters and mark all planned work deferred. Set the run incomplete with reason `critic_budget_exhausted`. Make no complete-coverage claim.
+Before wave 1, update the pre-recon estimate with these items:
+
+- the seeded units;
+- the implied hunter count;
+- the mandatory critic calls;
+- the validation reserve;
+- whether the remaining budget covers the plan.
+
+If the budget clearly cannot cover the plan, say so. Propose a tighter scope or a coarser profile. Do not silently thin the evidence. If later facts consume the required final-critic reserve, launch no hunters and mark all planned work deferred. Set the run incomplete with reason `critic_budget_exhausted`. Make no complete-coverage claim.
 
 An unexpectedly large candidate set can exceed a strict total-agent budget. A material Phase 5 replacement that needs another independent verifier can also exceed it. Suppose the remaining budget cannot validate every candidate. Then stop hunting and validate candidates in fingerprint order while the budget permits. Set `run_status: "incomplete"` and `incomplete_reason: "validation_budget_exhausted"`. Keep each unvalidated fingerprint linked to a `candidate` ledger unit with that unresolved reason. Do not put an unvalidated candidate in `findings.json`. Do not relabel it `needs_validation`. Do not report the run as complete. Phase 6 can produce a partial report only if its first section states that candidate validation is incomplete and lists the affected fingerprints and units. Never exceed a user-set strict budget silently.
 

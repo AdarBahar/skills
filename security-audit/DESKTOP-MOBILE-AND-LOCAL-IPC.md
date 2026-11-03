@@ -24,7 +24,22 @@ Use `CLIENT-SIDE.md` for browser-side webview behavior. Use `MEMORY-SAFETY-AND-B
 Another app or page can invoke a route that mutates state, imports data, completes authentication, or selects an account. The route is not bound to a current session and a one-time callback. Review the URI normalization, duplicate query fields, scheme/host/path matching, and exported activity/handler policy. Also review stale and replayed links.
 
 **App and account handoff confusion**
-OAuth, SSO, magic-link, invite, device pairing, passwordless, or payment callbacks return to the wrong installed app, profile, tenant, or pending transaction. Bind the state to the initiating app identity, current session, account, provider, operation, and expiry.
+These callbacks can return to the wrong installed app, profile, tenant, or pending transaction:
+- OAuth
+- SSO
+- Magic-link
+- Invite
+- Device pairing
+- Passwordless
+- Payment
+
+Bind the state to these items:
+- Initiating app identity
+- Current session
+- Account
+- Provider
+- Operation
+- Expiry
 
 **File-open and intent authority confusion**
 An associated file, share intent, drag/drop item, pasteboard/clipboard record, notification action, or open-file event triggers a privileged operation. The app does not confirm the content type, the sender trust where applicable, the current user intent, and the final target.
@@ -71,7 +86,16 @@ A keychain/keystore item, token file, backup, log, clipboard, notification previ
 ## Application-state and device-lifecycle attack classes (subagent_type: `general`)
 
 **Account switch, logout, and device restore leakage**
-Cached data, background tasks, widgets, notifications, local databases, webview storage, or biometric approvals survive a logout or account change. They then appear under a later account. Review the backup/restore and multi-profile behavior.
+These items can survive a logout or account change:
+- Cached data
+- Background tasks
+- Widgets
+- Notifications
+- Local databases
+- Webview storage
+- Biometric approvals
+
+They then appear under a later account. Review the backup/restore and multi-profile behavior.
 
 **Pending-action and user-presence confusion**
 A notification, widget, shortcut, share sheet, biometric prompt, or deferred operation authorizes a different action than the one displayed. Or it runs after expiry. Or it uses the pending state of another profile. Bind the confirmation to the normalized action, resource, account, and current foreground state.

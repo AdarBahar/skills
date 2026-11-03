@@ -20,7 +20,16 @@ Use this file with `ATTACK-CLASSES.md`. Do not use it instead of that file. Tran
 ## Context, retrieval, and memory attack classes (subagent_type: `general`)
 
 **Indirect injection through retrieved or ingested content**
-An attacker can write a RAG document, an indexed page, a file, an email, an issue body, a tool response, or metadata. That content enters the model context of a different principal. Trace who can write each source. Trace how retrieval scopes it. Trace whose session uses it, and which capability that session enables. Check isolation, resource authorization, and binding to the intent of the consuming principal separately. The defect is a missing deterministic control. Persuasive text by itself is not a defect.
+An attacker can write content into one of these sources:
+- a RAG document
+- an indexed page
+- a file
+- an email
+- an issue body
+- a tool response
+- metadata
+
+That content enters the model context of a different principal. Trace who can write each source. Trace how retrieval scopes it. Trace whose session uses it, and which capability that session enables. Check isolation, resource authorization, and binding to the intent of the consuming principal separately. The defect is a missing deterministic control. Persuasive text by itself is not a defect.
 
 **Cross-session or cross-tenant context bleed**
 Conversation history, embeddings, retrieval results, or prompt caches use keys that are too broad. Verify the tenant and ACL filters in the query itself and in every cache key. A tenant field that the code stores on an object is not enforcement. An alternate query, a shared cache, or a batch path can omit it.
@@ -29,7 +38,20 @@ Conversation history, embeddings, retrieval results, or prompt caches use keys t
 The code writes attacker-controlled content or model summaries into memory. That memory later shapes another task, another user, or a privileged session. Review these points. Who may create, update, merge, and delete memory? What are its provenance and tenant scope? Do low-trust observations become durable instructions or facts? Does retrieval distinguish user preferences from tool policy? Memory that a user saves intentionally is not a cross-boundary finding when the system uses it only for the intentional, allowed requests of that user.
 
 **Prompt role and provenance confusion**
-Prompt assembly lets untrusted text impersonate a system message, a prior turn, a tool result, a policy, or a memory record. Look for string concatenation, untyped history, caller-controlled role fields, and serialization round trips that lose source labels. Confirm that the forged provenance changes a deterministic trust decision or reaches a meaningful capability.
+Prompt assembly lets untrusted text impersonate any of these:
+- a system message
+- a prior turn
+- a tool result
+- a policy
+- a memory record
+
+Look for these patterns:
+- string concatenation
+- untyped history
+- caller-controlled role fields
+- serialization round trips that lose source labels
+
+Confirm that the forged provenance changes a deterministic trust decision or reaches a meaningful capability.
 
 ## Tool and action attack classes (subagent_type: `general`)
 
@@ -40,7 +62,22 @@ Model-produced arguments reach SQL, shell, file, URL-fetch, or privileged APIs. 
 The agent uses a service identity or a broad credential. The tool handler does not check again the permission of the requesting principal on the named resource. Verify the effective identity. Verify if the caller could do that exact operation through the normal product interface. A shared credential with an enforced per-user query scope is not a defect.
 
 **Action-confirmation and approval binding**
-A user approves one described action, but the execution can use changed arguments, a different resource, a different principal, or a later model turn. An action-binding defect also exists in this case. Attacker-controlled content causes a side effect under the valid authority of a victim. The victim did not intentionally request or approve it. This applies even if generic authorization permits the victim to do the action. Review if intent or confirmation binds these items: the normalized tool name, the complete argument object, the requester, the target, the amount, the expiry, and the batch membership. Check retries and resumed sessions. An approval must not authorize a changed or duplicate side effect.
+A user approves one described action, but the execution can use any of these:
+- changed arguments
+- a different resource
+- a different principal
+- a later model turn
+
+An action-binding defect also exists in this case. Attacker-controlled content causes a side effect under the valid authority of a victim. The victim did not intentionally request or approve it. This applies even if generic authorization permits the victim to do the action. Review if intent or confirmation binds these items:
+- the normalized tool name
+- the complete argument object
+- the requester
+- the target
+- the amount
+- the expiry
+- the batch membership
+
+Check retries and resumed sessions. An approval must not authorize a changed or duplicate side effect.
 
 **Tool-schema and dispatcher disagreement**
 The schema accepts aliases, extra fields, duplicate keys, coercions, nested free-form objects, or out-of-range values. The dispatcher or the handler interprets them differently. Compare the schema validation, the canonicalization, the generated bindings, and the handler defaults. Validate again where values become resource selectors or security-relevant options.
@@ -54,10 +91,24 @@ A bounded request can queue repeated spend, send, mutation, or external API work
 A delegated task receives the full session, credentials, memory, or capabilities. It does not receive only the least authority that it needs. Check the principal and tenant that each call carries. Check the narrowing of capabilities and the credential audience. Check if the code treats delegated results as untrusted when they return.
 
 **MCP server and tool identity confusion**
-The code routes calls or results by server names, tool names, request IDs, resource URIs, or model-selected aliases that an attacker can influence. The code does not use the authenticated connection and the outstanding request. Check if two servers can claim the same tool or resource identity. Check if a reconnect changes the binding. Check if a response from one server can satisfy the pending call of another server.
+The code routes calls or results by one of these values, which an attacker can influence:
+- server names
+- tool names
+- request IDs
+- resource URIs
+- model-selected aliases
+
+The code does not use the authenticated connection and the outstanding request. Check if two servers can claim the same tool or resource identity. Check if a reconnect changes the binding. Check if a response from one server can satisfy the pending call of another server.
 
 **MCP metadata and schema as policy**
-The code trusts tool descriptions, resource metadata, prompts, completion hints, or schemas from an MCP peer as policy or authorization. These fields can guide the model, but they cannot grant capability. Find the deterministic allowlist, the server identity check, and the handler authorization. These controls stay authoritative when metadata conflicts.
+The code trusts these items from an MCP peer as policy or authorization:
+- tool descriptions
+- resource metadata
+- prompts
+- completion hints
+- schemas
+
+These fields can guide the model, but they cannot grant capability. Find the deterministic allowlist, the server identity check, and the handler authorization. These controls stay authoritative when metadata conflicts.
 
 ## Output and disclosure attack classes (subagent_type: `general`)
 

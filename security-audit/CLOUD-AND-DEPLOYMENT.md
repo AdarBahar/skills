@@ -52,7 +52,15 @@ Network, admission, secret, or workload-identity policy relies on labels, annota
 ## Configuration and secret lifecycle attack classes (subagent_type: `general`)
 
 **Security-control precedence drift**
-Development values, chart defaults, environment variables, command-line flags, feature gates, or sidecar injection can disable authentication, transport security, tenant scoping, or audit policy. Per-region overlays can do the same. This happens in a deployed environment. Render the final configuration for each maintained deployment. Do not review only the base file.
+These items can disable authentication, transport security, tenant scoping, or audit policy:
+- Development values
+- Chart defaults
+- Environment variables
+- Command-line flags
+- Feature gates
+- Sidecar injection
+
+Per-region overlays can do the same. This happens in a deployed environment. Render the final configuration for each maintained deployment. Do not review only the base file.
 
 **Secret exposure across workload boundaries**
 Secrets enter logs, crash reports, process arguments, shared environment, broad volumes, build outputs, service discovery, or read APIs. Another workload or tenant can access these. Check the secret type and authority. A public endpoint or key ID is not a credential.

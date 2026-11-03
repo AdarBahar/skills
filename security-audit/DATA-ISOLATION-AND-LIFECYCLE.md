@@ -19,7 +19,21 @@ Split a large target by primary storage, cache/search, object/blob storage, anal
 ## Tenant and object-isolation attack classes (subagent_type: `general`)
 
 **Missing tenant or owner enforcement**
-A read, update, delete, list, count, or bulk query identifies an object but does not bind it to the authenticated tenant/owner. Or it trusts body fields to supply that identity. Compare the direct lookup, nested relationship, background, admin, import, and legacy paths.
+One of these operations identifies an object but does not bind it to the authenticated tenant/owner:
+- Read
+- Update
+- Delete
+- List
+- Count
+- Bulk query
+
+Or the operation trusts body fields to supply that identity. Compare these paths:
+- Direct lookup
+- Nested relationship
+- Background
+- Admin
+- Import
+- Legacy
 
 **Composite-key and namespace collision**
 Cache keys, object paths, database uniqueness, search document IDs, temporary files, or deduplication keys omit the tenant or environment. Two principals can overwrite or retrieve the same logical key, even though the application records carry separate owners.
@@ -28,7 +42,19 @@ Cache keys, object paths, database uniqueness, search document IDs, temporary fi
 Row-level policy, ORM default scopes, authorization filters, and raw/bypass clients apply different predicates. Check joins, aggregates, aliases, views, transactions, `unscoped` clients, service clients, and error paths where the context is missing.
 
 **Blob and signed-reference overreach**
-Object keys, attachment IDs, version IDs, shared links, or signed URLs permit operations or namespaces beyond the access of the issuing principal. Or they remain valid after the underlying ACL changes. Bind the operation, exact object/version, audience, expiry, and tenant.
+These items can permit operations or namespaces beyond the access of the issuing principal:
+- Object keys
+- Attachment IDs
+- Version IDs
+- Shared links
+- Signed URLs
+
+Or they remain valid after the underlying ACL changes. Bind these to the reference:
+- Operation
+- Exact object/version
+- Audience
+- Expiry
+- Tenant
 
 ## Derived-data and disclosure attack classes (subagent_type: `general`)
 
@@ -53,7 +79,14 @@ A restore or import bypasses owner, schema, ACL, uniqueness, or validation rules
 Old records lack tenant, ACL, or lifecycle fields. Incompatible IDs collide. A partial rollout makes new and old readers apply different defaults. Review the backfill, dual-read/write, compatibility, rollback, and resumed-migration paths.
 
 **Backup and replication boundary drift**
-Encryption keys, storage accounts, cross-region replicas, restoration environments, or support snapshots have a broader identity or tenant scope than the primary data. Source can confirm only the in-repo policy. Hosted access and retention require `needs_validation`.
+These items can have a broader identity or tenant scope than the primary data:
+- Encryption keys
+- Storage accounts
+- Cross-region replicas
+- Restoration environments
+- Support snapshots
+
+Source can confirm only the in-repo policy. Hosted access and retention require `needs_validation`.
 
 ## Deletion, revocation, and lifecycle attack classes (subagent_type: `general`)
 

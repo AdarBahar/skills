@@ -7,7 +7,13 @@ description: "Makes a codebase easier to maintain through pure refactoring. Anal
 
 Help the user make a codebase easier to maintain. Do not change behavior and do not weaken security. The work has four phases. Most requests start at Phase 1, but the user can go directly to a later phase. For example, "run a code review on this PR" is Phase 4. Read the phase the user asks for and do that phase. Do not force the whole pipeline if the user wants only a part.
 
-The prime directive for every phase: **optimization is pure refactoring. It must not change observable behavior, remove capabilities, or weaken security in any way.** If a change alters what the code does, it is a feature or a bugfix. Flag it and get explicit approval before you touch it. If you are not sure, make the change smaller.
+The prime directive for every phase: **optimization is pure refactoring.** It must not do any of these things in any way:
+
+- Change observable behavior.
+- Remove capabilities.
+- Weaken security.
+
+If a change alters what the code does, it is a feature or a bugfix. Flag it and get explicit approval before you touch it. If you are not sure, make the change smaller.
 
 ## Before you start
 

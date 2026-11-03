@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Reviews a GitHub pull request with independent agents. Scores each finding for confidence and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode for a quick or fast review. Full mode uses five agents. Quick mode uses two.
-allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*)
+allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh api repos/*/pulls/*/comments:*), Bash(gh api repos/*/pulls/*/reviews:*)
 ---
 
 Do a code review of the given pull request.
@@ -17,18 +17,66 @@ If the request is not clear, use full mode. In your first message, state the mod
 
 The confidence threshold is **70** in both modes.
 
+## Shared rules
+
+### Authority
+
+- Read the repository, the pull request, its linked issues, its checks, and its review threads.
+- Post one comment for each run. Do not post anything else.
+- Do not change code. Do not push, merge, deploy, run workflows, resolve threads, or edit the pull request.
+
+### Pin the head SHA
+
+- Record the head SHA and the target branch before you start. Review only that SHA.
+- If the head SHA changes during the run, start again on the new SHA.
+- Check the head SHA again before you post. If it changed, review the new SHA first.
+
+### Existing threads
+
+- Read the existing review comments and threads before you post.
+- Do not post a finding that the pull request already reports. Reply on its existing thread with new information.
+
+### Review scope
+
+Check these items. Report only real findings that apply to the change.
+
+- Correctness, edge cases, and regressions. Read the callers and the related features of each change. Check them even when their files did not change.
+- Security: authentication, authorization, input handling, and secrets.
+- Tests: each fix has a regression test. No test is skipped or disabled. Tests are deterministic, with a controlled clock and no timing waits.
+- Database migrations: a new migration uses the next number. Do not edit an applied migration. The running release must still work during and after the migration.
+- Compatibility: flag each change to an endpoint or to a response that clients use.
+- Project rules: apply the rules in the CLAUDE.md of the repository.
+
+### CI evidence and verdict (full mode only)
+
+- List each required check for the head SHA. Give its state: passed, failed, pending, cancelled, or missing.
+- Keep two facts apart. "Verified" means that you read the state on GitHub for this SHA. "Reported" means that the pull request body claims it. Name the source of each fact.
+- Severity: P1 is critical or high impact and blocks the merge. P2 is a correctness, regression, security, or compatibility issue to fix before the merge. P3 is minor or optional and does not block the merge.
+- Confidence (the score) decides whether a finding is posted. Severity orders the posted findings.
+- Give exactly one verdict:
+  - **Ready to merge**: the review is complete, required checks passed on the reviewed SHA, and no P1 or P2 remains.
+  - **Changes required**: one or more P1 or P2 remain, or a required check failed.
+  - **Blocked**: the review cannot be completed, or required evidence is missing. For example, a required check is pending, cancelled, or missing. Say why.
+
+### Re-review
+
+- When the user asks for a review again, run a complete review of the current head SHA. Do not stop because an earlier review exists.
+- For each earlier finding, check the current code. Classify it as resolved, partly resolved, or unresolved.
+- Reply on its thread with the status and the SHA. Do not resolve the thread unless the user asks.
+- Check that the fixes add no new problems.
+
 ---
 
 ## Full review process
 
 Do these steps exactly:
 
-1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you. A pull request does not need a code review if it is automated, or if it is very simple and obviously correct.
+1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you, unless the user asks for a new review. A pull request does not need a code review if it is automated, or if it is very simple and obviously correct.
 2. Use a different Haiku agent to give you a list of file paths to the relevant CLAUDE.md files. Do not request the contents of the files. Include the root CLAUDE.md file (if one exists). Also include each CLAUDE.md file in the directories of the files that the pull request changed.
 3. Use a Haiku agent to view the pull request. Ask the agent to return a summary of the change.
 4. Start 5 parallel Sonnet agents to review the change independently. Each agent should do the task below. Each agent should return a list of issues and the reason for each issue (for example CLAUDE.md adherence, bug, or historical git context):
    a. Agent #1: Audit the changes to make sure that they comply with the CLAUDE.md. CLAUDE.md is guidance for Claude when it writes code. Not all of its instructions apply to a code review.
-   b. Agent #2: Read the file changes in the pull request. Then do a shallow scan for obvious bugs. Do not read extra context beyond the changes. Look only at the changes. Find large bugs. Do not report small issues and nitpicks. Ignore likely false positives.
+   b. Agent #2: Read the file changes in the pull request. Then do a shallow scan for obvious bugs. Do not read extra context beyond the changes. Look only at the changes. Find large bugs. Do not report small issues and nitpicks. Ignore likely false positives. Also check the items in **Review scope** that apply to the change.
    c. Agent #3: Read the git blame and history of the code that the pull request changed. Use this historical context to find bugs.
    d. Agent #4: Read the previous pull requests that changed these files. Check if any comments on those pull requests also apply to the current pull request.
    e. Agent #5: Read the code comments in the changed files. Make sure that the changes in the pull request comply with the guidance in the comments.
@@ -39,6 +87,8 @@ Do these steps exactly:
    a. Keep your output brief.
    b. Do not use emojis.
    c. Link and cite the relevant code, files, and URLs.
+   d. Read the comment back to confirm that it exists.
+   e. If you cannot post the comment, print its full text in the chat.
 
 ---
 
@@ -46,13 +96,13 @@ Do these steps exactly:
 
 This process costs less and takes less time. It does not use the two dimensions that are slowest and need the most context (git history and prior-PR research). It keeps the two dimensions that find the most issues for each token. Do these steps exactly:
 
-1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you. Ask this agent to also return the PR title, the full 40-character head SHA, and the list of changed files. Then you do not need a separate summary step.
+1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you, unless the user asks for a new review. Ask this agent to also return the PR title, the full 40-character head SHA, and the list of changed files. Then you do not need a separate summary step.
 2. Start **2 parallel Sonnet agents** to review the change independently. Each agent returns a list of issues and the reason for each issue:
-   a. Agent #1: Read the file changes in the pull request and scan for bugs. Look at the diff itself. Do not use broad extra context. Focus on large bugs, for example correctness errors, wrong guards, bad math, and broken control flow. Do not report nitpicks. Also flag each comment in the changed lines that claims a behavior that the code does not do.
+   a. Agent #1: Read the file changes in the pull request and scan for bugs. Look at the diff itself. Do not use broad extra context. Focus on large bugs, for example correctness errors, wrong guards, bad math, and broken control flow. Do not report nitpicks. Also check the items in **Review scope** that apply to the diff. Also flag each comment in the changed lines that claims a behavior that the code does not do.
    b. Agent #2: Find the root CLAUDE.md and each CLAUDE.md in the directories that the PR changed. Then audit the changes for compliance. CLAUDE.md is guidance for Claude when it writes code. Not all of its instructions apply to a review. Ignore process instructions (branching, PR checklists, and running gates). CI does these.
 3. Use a **single** Haiku agent to score **all** issues in one pass. Do not use one agent for each issue. Give the agent the PR, the list of issues, and the CLAUDE.md paths found in step 2. Use the rubric in **Scoring rubric** below, verbatim. For an issue that was flagged because of CLAUDE.md, the agent must double check that the CLAUDE.md names that specific issue.
 4. Remove each issue with a score less than 70. If no issue meets this criterion, do not continue.
-5. Add a comment to the pull request. Use the **Quick comment format** below. Label the comment as a quick review. Then the reader knows the depth of the review.
+5. Add a comment to the pull request. Use the **Quick comment format** below. Label the comment as a quick review. Then the reader knows the depth of the review. Read the comment back to confirm that it exists. If you cannot post it, print its full text in the chat. Quick mode gives no verdict and no CI status. Do not add the Head and Verdict line to a quick comment.
 
 Quick mode does not repeat the eligibility check. The run is short, so the risk of a change in the meantime is small. If a quick run takes a long time, do the eligibility check again before you add the comment.
 
@@ -86,6 +136,8 @@ Notes:
 - Do not check the build signal. Do not try to build or typecheck the app. These run separately and are not relevant to your code review.
 - Use `gh` to work with Github (for example to get a pull request, or to create inline comments). Do not use web fetch.
 - Make a todo list first.
+- Do not invent findings. If no finding passes, say so.
+- Give each finding a severity, the problem, a reproduction where it helps, and a concrete fix. Write it so another agent can fix it without questions.
 - You must cite and link each bug (for example, if you refer to a CLAUDE.md, you must link it).
 
 ### Full comment format
@@ -95,6 +147,8 @@ Use this format exactly (in this example, you found 3 issues):
 ---
 
 ### Code review
+
+Head: <full sha>. Verdict: <Ready to merge | Changes required | Blocked>. Checks: verified <state>; reported <claim>.
 
 Found 3 issues:
 
@@ -121,6 +175,8 @@ Generated with [Claude Code](https://claude.ai/code)
 ---
 
 ### Code review
+
+Head: <full sha>. Verdict: <Ready to merge | Changes required | Blocked>. Checks: verified <state>; reported <claim>.
 
 No issues found. Checked for bugs and CLAUDE.md compliance.
 

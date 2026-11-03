@@ -10,7 +10,23 @@ Use `confirmed` only when source evidence and bounded validation establish the f
 >
 > **AI / LLM / agent targets** (chatbots, RAG, persistent memory, tool-calling agents, MCP servers/clients, prompt assembly, or model-controlled actions): use the context, memory-poisoning, action-binding, tool-schema, MCP-identity, and output classes in [AI-AND-LLM.md](AI-AND-LLM.md).
 >
-> **HTTP, web, and identity targets** (ordinary web apps, APIs, reverse proxies, CDNs, gateways, custom HTTP parsers, sessions, CSRF, JWT, OAuth/OIDC, SAML, MFA, passkeys, account recovery/linking, API keys, or mTLS): use [WEB-PROTOCOL-AND-AUTH.md](WEB-PROTOCOL-AND-AUTH.md).
+> **HTTP, web, and identity targets**: use [WEB-PROTOCOL-AND-AUTH.md](WEB-PROTOCOL-AND-AUTH.md). These targets are:
+> - ordinary web apps
+> - APIs
+> - reverse proxies
+> - CDNs
+> - gateways
+> - custom HTTP parsers
+> - sessions
+> - CSRF
+> - JWT
+> - OAuth/OIDC
+> - SAML
+> - MFA
+> - passkeys
+> - account recovery/linking
+> - API keys
+> - mTLS
 >
 > **Client-side and browser targets** (SPAs, browser extensions, embedded webviews, service workers, browser storage, cross-window messaging, CORS, WebSockets, or DOM rendering): use [CLIENT-SIDE.md](CLIENT-SIDE.md).
 >
@@ -32,7 +48,11 @@ Trace untrusted input from the entry point to the dangerous sink. The applicatio
 - Libraries: any function that processes caller-supplied data without validation — buffer operations, parsers, format strings
 - CLI tools: shell command construction, file path handling, environment variable interpolation
 - Services: query construction, message serialization, log injection, LDAP/XPATH queries
-- Client-side (browser/JS): DOM XSS, prototype pollution, `postMessage`/origin trust, and other browser-side classes — the [CLIENT-SIDE.md](CLIENT-SIDE.md) companion blocks cover these when you select them
+- Client-side (browser/JS): the [CLIENT-SIDE.md](CLIENT-SIDE.md) companion blocks cover these classes when you select them:
+  - DOM XSS
+  - prototype pollution
+  - `postMessage`/origin trust
+  - other browser-side classes
 
 Do not stop at the obvious direct paths. Look for indirect injection. In indirect injection, the code stores data safely, and different code retrieves it and uses it in a dangerous context. Look for injection through field names, keys, headers, and metadata, not only values. Look for injection into secondary systems (logs, caches, search indexes, analytics).
 
@@ -47,7 +67,10 @@ Verify that a caller cannot do something outside its authority. Do not only chec
 For complex access models, split the work into separate agents for auth bypass and authorization logic.
 
 **Resource and file handling** (subagent_type: `general`)
-- Path traversal (reading/writing outside intended directories) — including through symlinks, encoded sequences, and null bytes
+- Path traversal (reading/writing outside intended directories), including through:
+  - symlinks
+  - encoded sequences
+  - null bytes
 - SSRF (making the application fetch attacker-controlled URLs) — including through redirects, DNS rebinding, and URL parser differentials
 - Unsafe deserialization, archive extraction (zip slip), temp file handling
 - Memory safety (if applicable): buffer overflows, use-after-free, integer overflow
@@ -55,7 +78,12 @@ For complex access models, split the work into separate agents for auth bypass a
 
 **Cryptography and secrets** (subagent_type: `general`)
 - Weak randomness for security-critical values (tokens, keys, nonces)
-- Hardcoded secrets, secrets in logs, error messages, URLs, or client-visible responses
+- Secret exposure:
+  - hardcoded secrets
+  - secrets in logs
+  - secrets in error messages
+  - secrets in URLs
+  - secrets in client-visible responses
 - Broken key derivation, missing HMAC verification, nonce reuse
 - Timing side-channels on secret comparison
 - Misuse of crypto primitives (ECB mode, unauthenticated encryption, static IVs, or similar weak choices)

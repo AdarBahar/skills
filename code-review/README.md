@@ -35,6 +35,11 @@ A quick review posts under a `### Code review (quick)` heading. It states clearl
 - **It does not review what it should not review.** At the start, it checks the PR. It checks that the PR is not closed, a draft, automated, or already reviewed. In a full run, it checks again before it comments. Then a PR that was merged during the review does not get a late comment.
 - **It cites everything.** Each finding links to permalinked line ranges at the full commit SHA, with context lines around the flagged code.
 - **CI does the work of CI.** Type errors, lint, formatting, and build failures are out of scope.
+- **Limited authority.** The skill reads the pull request and posts one comment. It does not change code, push, merge, or resolve threads.
+- **Pinned to one commit.** The skill records the head SHA before it starts. If the head changes, it starts again. It checks the SHA again before it posts.
+- **No duplicate findings.** It reads the existing threads first. It replies on a thread that already reports a finding.
+- **A verdict in full mode.** The full review gives one verdict: Ready to merge, Changes required, or Blocked. A verdict needs verified CI evidence. A missing or pending required check gives Blocked.
+- **Re-review.** When you ask for a review again, the skill reviews the current head in full. It marks each earlier finding as resolved, partly resolved, or unresolved.
 
 ## Installing
 
