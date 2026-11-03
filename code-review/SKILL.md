@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Code review a pull request. Use when the user asks to review a PR, run a code review, or requests a quick/fast code review. Supports two depths - full (5 review agents) and quick (2 review agents).
+description: Reviews a GitHub pull request with independent agents, scores each finding for confidence, and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode when the user asks for a quick or fast review. Full mode uses five review agents. Quick mode uses two.
 allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*)
 ---
 
@@ -110,7 +110,7 @@ Found 3 issues:
 
 <link to file and line with full sha1 + line range for context>
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
+Generated with [Claude Code](https://claude.ai/code)
 
 <sub>- If this code review was useful, please react with 👍. Otherwise, react with 👎.</sub>
 
@@ -124,7 +124,7 @@ Found 3 issues:
 
 No issues found. Checked for bugs and CLAUDE.md compliance.
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
+Generated with [Claude Code](https://claude.ai/code)
 
 ---
 
@@ -138,7 +138,7 @@ Identical to the full format, except the heading is `### Code review (quick)` an
 
 No issues found in a quick review, which checks the diff for bugs and CLAUDE.md compliance. It does not check git history or prior PR review comments — ask for a full review to cover those.
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
+Generated with [Claude Code](https://claude.ai/code)
 
 ---
 

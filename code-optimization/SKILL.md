@@ -1,6 +1,6 @@
 ---
 name: code-optimization
-description: "Analyze a codebase for maintainability, propose and prioritize refactors, then implement them safely with tracked issues and a review-ready PR. Use whenever the user wants to optimize, clean up, refactor, or improve the maintainability of code — split large files, extract functions into separate files, reduce file/line counts, or otherwise make a project easier to maintain — especially when they also want issues/sub-issues created, work done on a dev branch with tests, and a PR opened for review. Also use for the standalone \"review this PR\" ask. Works with GitHub, GitLab, or any issue/PR tooling that's available. This is a refactoring skill: it never changes what the code does or weakens security."
+description: "Makes a codebase easier to maintain through pure refactoring. Analyzes the code, prioritizes refactors, files tracked issues, implements them on a branch with tests, and opens a review-ready PR. Use when the user asks to optimize, clean up, refactor, or improve maintainability, such as splitting large files, extracting functions into modules, or reducing file or line counts, especially when they also want issues, a dev branch with tests, or a PR. Works with GitHub, GitLab, or any available issue or PR tooling. Never changes what the code does or weakens security. Do not use for ordinary PR reviews; use code-review instead."
 ---
 
 # Code Optimization
@@ -96,7 +96,7 @@ Goal: a review-ready PR (or a few, if that reviews better) linking every issue s
 
 ## Phase 4 — Code review
 
-Use this when the user asks to review a PR (often on a fresh agent with just a PR link — that's fine, this phase stands alone).
+Use this phase only for a refactor PR. It checks behavior and security first. For any other PR review, use the `code-review` skill.
 
 Fetch the PR: its diff, description, linked issues, and CI status (`gh pr view <url> --json ...` / `gh pr diff`, `glab mr` equivalents, or the connector). Then review thoroughly against these axes, in priority order:
 
