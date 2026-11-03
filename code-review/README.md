@@ -102,4 +102,4 @@ If reviews are always empty, the threshold can be the wrong cause. The rubric mi
 
 ## Origin
 
-This skill is adapted from the `code-review` command in the [official Claude Code plugins](https://github.com/anthropics/claude-code) marketplace of Anthropic. These are the changes from the original: the confidence threshold changed from 80 to 70, and the quick mode is new. The scoring rubric and comment templates are now separate sections, so both modes share one copy.
+This skill is adapted from the `code-review` command in the [official Claude Code plugins](https://github.com/anthropics/claude-code) marketplace of Anthropic. These are the changes from the original: the confidence threshold changed from 80 to 70, and the quick mode is new. The scoring rubric and comment templates are now separate sections, so both modes share one copy. The skill also picks the depth from the size of the PR, pins the head SHA, reads the existing threads, gives a merge verdict with CI evidence, and supports a re-review.

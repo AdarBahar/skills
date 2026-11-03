@@ -18,7 +18,7 @@ Each skill is in its own folder. The folder has a `SKILL.md` file, which contain
 
 | Skill | Function | Example request |
 |---|---|---|
-| [code-review](./code-review) | Reviews a pull request with a panel of independent agents. It scores each finding and posts only the findings that pass. A full review uses five checks. A quick review uses two. | "Review PR #42." · "Run a quick code review on this PR." |
+| [code-review](./code-review) | Reviews a pull request with a panel of independent agents. It scores each finding and posts only the findings that pass. A full review uses five checks and gives a merge verdict. A quick review uses one or two. If you name no mode, it picks the depth from the size of the PR. | "Review PR #42." · "Run a quick code review on this PR." |
 | [code-optimization](./code-optimization) | Makes code easier to maintain. It finds the files to improve and makes issues. It refactors on a work branch with tests before and after, and it opens a PR. It does not change what the code does. It does not weaken security. | "Optimize this project for maintainability." |
 | [security-audit](./security-audit) | Audits code for security vulnerabilities that cross a trust boundary. It gives the source evidence, a safe reproduction, a priority, and a fix. Full audits write reports. It never runs target code without a sandbox. It never touches a production host without approval. Adapted from Cloudflare's MIT-licensed skill. | "Security audit this codebase." · "Find security issues in ./src." |
 

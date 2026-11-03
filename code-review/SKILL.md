@@ -1,7 +1,7 @@
 ---
 name: code-review
-description: Reviews a GitHub pull request with independent agents. Scores each finding for confidence and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode for a quick or fast review. Full mode uses five agents. Quick mode uses two.
-allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh api repos/*/pulls/*/comments:*), Bash(gh api repos/*/pulls/*/reviews:*)
+description: Reviews a GitHub pull request with independent agents. Scores each finding for confidence and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode for a quick or fast review. Full mode uses five review agents and gives a merge verdict. Quick mode uses one or two. When the user names no mode, the skill picks the depth from the size of the PR.
+allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh api repos/*/pulls/*/comments:*), Bash(gh api repos/*/pulls/comments/*), Bash(gh api repos/*/pulls/*/reviews:*)
 ---
 
 Do a code review of the given pull request.
@@ -30,7 +30,7 @@ The confidence threshold is **70** in both modes.
 ### Authority
 
 - Read the repository, the pull request, its linked issues, its checks, and its review threads.
-- Post one comment for each run. Do not post anything else.
+- Post one review comment for each run. In a re-review, also reply on the existing threads. Do not post anything else.
 - Do not change code. Do not push, merge, deploy, run workflows, resolve threads, or edit the pull request.
 
 ### Pin the head SHA
@@ -174,7 +174,7 @@ Found 3 issues:
 
 Generated with [Claude Code](https://claude.ai/code)
 
-<sub>- If this code review was useful, please react with 👍. Otherwise, react with 👎.</sub>
+<sub>If this code review was useful, react with a thumbs up. Otherwise, react with a thumbs down.</sub>
 
 ---
 
