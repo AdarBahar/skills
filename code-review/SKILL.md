@@ -8,12 +8,20 @@ Do a code review of the given pull request.
 
 ## Choosing the depth
 
-This skill has two modes. Select the mode from the request of the user:
+This skill has two modes. Choose the mode in this order:
 
-- **Quick mode** - the user said "quick", "fast", "quick review", "fast code review", or gave `quick` or `fast` as an argument. Do the **Quick review process** below.
-- **Full mode** - any other request ("run a code review", "review PR #123", `/code-review <url>`). Do the **Full review process** below.
+1. If the user names a mode, use it. Quick mode: "quick", "fast", "quick review", "fast code review", or `quick` or `fast` as an argument. Full mode: "full", "full review", or "run a code review" with no size hint.
+2. Otherwise, choose a tier from the size of the pull request. Get the changed files and their line counts with `gh pr view <number> --json files`. Count the changed lines as additions plus deletions.
 
-If the request is not clear, use full mode. In your first message, state the mode that you use. This lets the user change the mode before the agents use tokens.
+| Tier | When | Mode | Review agents |
+| --- | --- | --- | --- |
+| 1 | Documentation only: every changed file is `.md`, `.txt`, or `.rst` | Quick | 1 |
+| 2 | Code, with at most 5 changed files and at most 150 changed lines | Quick | 2 |
+| 3 | Code, with more than 5 changed files or more than 150 changed lines | Full | 5 |
+
+For tier 1, use the **Quick review process** with one review agent in step 2. That agent does both tasks, (a) and (b).
+
+In your first message, state the mode and the tier. This lets the user change the mode before the agents use tokens.
 
 The confidence threshold is **70** in both modes.
 

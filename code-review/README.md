@@ -82,7 +82,13 @@ The skill starts from the type of request, not from its name. The words of the r
 - "Fast review of this PR."
 - "Quick review — I just want the obvious stuff."
 
-Claude states which mode it uses before it spends tokens. This lets you change the mode. If the request is not clear, Claude uses a full review.
+If the request does not name a mode, Claude chooses a tier from the size of the pull request:
+
+- **Tier 1, documentation only.** Every changed file is a text or Markdown file. Claude uses one review agent in quick mode.
+- **Tier 2, small code change.** Up to 5 files and 150 changed lines. Claude uses two review agents in quick mode.
+- **Tier 3, large code change.** More than 5 files or 150 changed lines. Claude uses a full review with five agents.
+
+Claude states the mode and the tier before it spends tokens. This lets you change the mode.
 
 ## Tuning the threshold
 
