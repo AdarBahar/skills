@@ -20,6 +20,7 @@ Each skill is in its own folder. The folder has a `SKILL.md` file (the steps tha
 |---|---|---|
 | [code-review](./code-review) | Reviews a pull request with a panel of independent agents. It scores each finding and posts only the findings that pass. A full review uses five checks. A quick review uses two. | "Review PR #42." · "Run a quick code review on this PR." |
 | [code-optimization](./code-optimization) | Makes code easier to maintain. It finds the files to improve, makes issues, refactors on a work branch with tests before and after, and opens a PR. It does not change what the code does and does not weaken security. | "Optimize this project for maintainability." |
+| [security-audit](./security-audit) | Audits code for security vulnerabilities that cross a trust boundary. It gives the source evidence, a safe reproduction, a priority, and a fix. Full audits write reports. It never runs target code without a sandbox, and never touches a production host without approval. Adapted from Cloudflare's MIT-licensed skill. | "Security audit this codebase." · "Find security issues in ./src." |
 
 Each skill folder has a README with the full details.
 
@@ -58,6 +59,7 @@ Then run `git pull` in the clone to get the newest version.
 
 - `code-review` needs the [GitHub CLI](https://cli.github.com) (`gh auth login`).
 - `code-optimization` works with GitHub (`gh`), GitLab (`glab`) or an issue tracker connector. Without one, it writes the issues as Markdown files.
+- `security-audit` needs [Node.js](https://nodejs.org) for its validators. It needs an isolated sandbox to run any target code.
 
 ## Add a skill
 
