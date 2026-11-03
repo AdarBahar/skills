@@ -1,6 +1,6 @@
 # PR template
 
-Adapt to the platform. The description must make the "pure refactor" claim verifiable at a glance and auto-close the issues on merge.
+Change the template to fit the platform. The description must let a reader verify the "pure refactor" claim at a glance. It must also close the issues automatically on merge.
 
 ```
 Title: Maintainability refactor — <area or "batch 1 of N">
@@ -34,11 +34,10 @@ Closes #<sub-issue>
 
 ## One PR vs. several
 
-- **One PR** when the branch is cohesive and reviewable in a single sitting.
-- **Several PRs** when the branch is large, spans unrelated areas, or mixes
-  low-risk structural moves with flagged riskier changes — split by area/risk so
-  each PR reviews cleanly. Each PR closes only the issues it actually resolves.
+- **One PR** when the branch is cohesive and a reviewer can read it in one sitting.
+- **Several PRs** when the branch is large, covers unrelated areas, or mixes
+  low-risk structural moves with flagged riskier changes. Split by area or risk
+  so that each PR is easy to review. Each PR closes only the issues that it resolves.
 
-Include the closing keywords for every resolved issue so a merge updates and
-closes them automatically.
+Include the closing keywords for every resolved issue. Then a merge updates and closes the issues automatically.
 ```

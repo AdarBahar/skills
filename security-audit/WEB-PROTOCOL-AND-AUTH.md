@@ -2,9 +2,9 @@
 
 #### When to use this file
 
-Reach for this file when the target speaks HTTP at a parsing, caching, browser-authentication, or identity boundary: web applications, APIs, reverse proxies, CDNs, gateways, custom HTTP servers, and services implementing sessions, JWT, OAuth/OIDC, SAML, password recovery, MFA, passkeys, API keys, or mTLS. Use this with `ATTACK-CLASSES.md`: access-control review asks whether a principal may perform an operation; this file asks whether the HTTP or identity layer can confuse which principal, request, assurance level, or token the operation belongs to.
+Use this file when the target speaks HTTP at a parsing, cache, browser-authentication, or identity boundary. Examples are web applications, APIs, reverse proxies, CDNs, gateways, and custom HTTP servers. Also use it for services that implement sessions, JWT, OAuth/OIDC, SAML, password recovery, MFA, passkeys, API keys, or mTLS. Use this file with `ATTACK-CLASSES.md`. Access-control review asks if a principal may perform an operation. This file asks if the HTTP layer or the identity layer can confuse which principal, request, assurance level, or token owns the operation.
 
-Pick classes from Phase 1. Split a large target into request framing and cache policy, browser authentication, federated identity, strong authentication and recovery, service credentials, and session lifecycle. A single server behind an unobserved managed proxy has little source-confirmable smuggling surface; a proxy or custom parser has much more.
+Pick classes from Phase 1. Split a large target into these parts: request framing and cache policy, browser authentication, federated identity, strong authentication and recovery, service credentials, and session lifecycle. A single server behind an unobserved managed proxy has little smuggling surface that the source can confirm. A proxy or a custom parser has much more.
 
 ## Core discipline (include in every agent prompt for this domain)
 
@@ -19,87 +19,87 @@ Pick classes from Phase 1. Split a large target into request framing and cache p
 ## HTTP framing and cache attack classes (subagent_type: `general`)
 
 **Request framing and desynchronization**
-Front end and back end disagree on request length or header normalization. Review multiple `Content-Length` values, `Transfer-Encoding`, HTTP/2 or HTTP/3 downgrade, header-name normalization, forbidden connection headers, and CR/LF conversion. Confirm which bytes one component assigns to a request and which bytes its peer assigns to the next request.
+The front end and the back end disagree on the request length or on the header normalization. Review these items: multiple `Content-Length` values, `Transfer-Encoding`, HTTP/2 or HTTP/3 downgrade, header-name normalization, forbidden connection headers, and CR/LF conversion. Confirm which bytes one component assigns to a request. Confirm which bytes its peer assigns to the next request.
 
 **Web cache poisoning through unkeyed input**
-A request value changes cached content or security-relevant headers but is absent from the cache key. Compare cache key construction with every response variant, including forwarded host/scheme, selected cookies, query normalization, language/device headers, and authorization state.
+A request value changes the cached content or the security-relevant headers, but the cache key does not include it. Compare the construction of the cache key with every response variant. Variants include the forwarded host and scheme, selected cookies, query normalization, language and device headers, and authorization state.
 
 **Cache deception and private-response caching**
-Cache routing treats a private dynamic path as a public static asset, or caches a response whose identity and authorization inputs are missing from policy. Compare edge cacheability with application route parsing, suffix/path-parameter normalization, and response cache directives.
+The cache routing treats a private dynamic path as a public static asset. Alternatively, the cache stores a response, and the policy does not include the identity and authorization inputs of that response. Compare the edge cacheability with the route parsing of the application. Also compare it with the suffix and path-parameter normalization and the response cache directives.
 
 **Host and forwarded-header trust**
-Untrusted host/proxy metadata determines absolute URLs, tenant routing, callbacks, reset links, cache keys, or the client address used by authorization. Confirm who can supply the header and whether trusted ingress removes client-provided copies.
+Untrusted host or proxy metadata determines one of these: absolute URLs, tenant routing, callbacks, reset links, cache keys, or the client address that authorization uses. Confirm who can supply the header. Confirm if the trusted ingress removes the client-provided copies.
 
 **Response-header injection**
-Untrusted data reaches `Location`, `Set-Cookie`, CSP, or another response header with unsafe control characters or normalization. Verify framework rejection before reporting and require a security-relevant response change.
+Untrusted data reaches `Location`, `Set-Cookie`, CSP, or another response header with unsafe control characters or normalization. Verify if the framework rejects the data before you report. Require a security-relevant change in the response.
 
 ## Browser-session attack classes (subagent_type: `general`)
 
 **Ordinary CSRF**
-A browser sends ambient credentials to a state-changing endpoint that accepts a cross-site request without an effective anti-CSRF token, same-site request binding, or strict Origin/Referer validation. Inventory every cookie-authenticated mutation, including form, JSON-like, multipart, method-override, and legacy routes. SameSite is effective only for the cookie and browser contexts actually used; login CSRF and cross-site subresource requests can have different requirements.
+A browser sends ambient credentials to a state-changing endpoint. The endpoint accepts a cross-site request and has no effective anti-CSRF token, no same-site request binding, and no strict Origin/Referer validation. Make an inventory of every cookie-authenticated mutation. Include form, JSON-like, multipart, method-override, and legacy routes. SameSite is effective only for the cookie and the browser contexts that the code actually uses. Login CSRF and cross-site subresource requests can have different requirements.
 
 **Session fixation and invalidation**
-Session identifiers are not rotated on login, account switch, MFA completion, impersonation, or other privilege changes, or remain valid after logout, password change, revocation, and account disable. Check server sessions, refresh tokens, signed cookies, websocket state, cache copies, and fallback endpoints.
+The code does not rotate session identifiers on login, account switch, MFA completion, impersonation, or other privilege changes. Alternatively, session identifiers stay valid after logout, password change, revocation, and account disable. Check server sessions, refresh tokens, signed cookies, websocket state, cache copies, and fallback endpoints.
 
 **Cookie scope and transport**
-A sensitive cookie has an over-broad `Domain` or `Path`, can cross an insecure transport, or conflicts with a sibling cookie that another component selects differently. Bare missing flags remain hardening notes unless a realistic less-trusted origin, network position, or browser path can gain or replace the credential.
+A sensitive cookie has an over-broad `Domain` or `Path`. Alternatively, it can cross an insecure transport, or it conflicts with a sibling cookie that another component selects differently. Missing flags alone remain hardening notes. They become findings only if a realistic less-trusted origin, network position, or browser path can gain or replace the credential.
 
 ## Federated-identity attack classes (subagent_type: `general`)
 
-First establish role. Authorization-server controls such as redirect allowlisting and code issuance do not belong to a relying-party client. Verification and binding defects belong to the component consuming the artifact.
+First, establish the role. Controls of the authorization server do not belong to a relying-party client. Examples are redirect allowlists and the issue of codes. Verification and binding defects belong to the component that consumes the artifact.
 
 **JWT verification and claim binding**
-Check signature verification, server-pinned algorithm and key source, then `exp`, `nbf`, `aud`, and `iss`. Review `kid`, `jku`, and `x5u` as untrusted key selectors, duplicate/header normalization, and decode-without-verify paths. A valid token for another service is invalid here even when signed by a trusted issuer.
+Check the signature verification, the algorithm that the server pins, and the key source. Then check `exp`, `nbf`, `aud`, and `iss`. Review `kid`, `jku`, and `x5u` as untrusted key selectors. Also review duplicate and header normalization and the paths that decode without verification. A valid token for another service is invalid here, even when a trusted issuer signed it.
 
 **OAuth/OIDC request and callback binding**
-Validate exact `redirect_uri` ownership where the target is the authorization server; session-bound `state`; PKCE and authorization-code binding where applicable; ID-token issuer/audience/signature/nonce; and selected-IdP binding in multi-provider flows. Compare initial callback, retry, mobile/deep-link, and account-link routes.
+Validate these items. Validate the exact `redirect_uri` ownership where the target is the authorization server. Validate the `state` that is bound to the session. Validate PKCE and the authorization-code binding where they apply. Validate the issuer, audience, signature, and nonce of the ID token. Validate the selected-IdP binding in multi-provider flows. Compare the initial callback, retry, mobile and deep-link, and account-link routes.
 
 **SAML signed-object and assertion binding**
-Ensure the element whose signature is validated is the element used as identity. Review unsigned/fallback paths, safe XML parser configuration, canonicalization differences, and freshness/binding fields such as validity windows, audience/recipient, request correlation, and replay state.
+Make sure that the element with the validated signature is the element that the code uses as identity. Review the unsigned and fallback paths, the safe XML parser configuration, and the canonicalization differences. Review the freshness and binding fields. These are the validity windows, the audience and recipient, the request correlation, and the replay state.
 
 ## MFA, passkey, and account-transition attack classes (subagent_type: `general`)
 
 **MFA enrollment and assurance downgrade**
-Enrollment, replacement, disablement, recovery-code generation, trusted-device creation, and fallback login require the intended prior assurance. Check that a valid first factor cannot enroll or replace the second factor without policy-required fresh authentication, and that disabled or stale factors stop authorizing sessions.
+Enrollment, replacement, disablement, recovery-code generation, trusted-device creation, and fallback login require the intended prior assurance. Check that a valid first factor cannot enroll or replace the second factor. This applies when policy requires fresh authentication. Also check that disabled or stale factors no longer authorize sessions.
 
 **Step-up binding and bypass**
-A successful challenge upgrades the wrong session, account, tenant, action, or API request, or an alternate route omits the assurance check. Bind the challenge to principal, current session, assurance target, operation or resource when required, expiry, and one-time completion. Compare UI, API, batch, recovery, and resumed-flow paths.
+A successful challenge upgrades the wrong session, account, tenant, action, or API request. Alternatively, an alternate route omits the assurance check. Bind the challenge to these items: the principal, the current session, the assurance target, the operation or resource when required, the expiry, and the one-time completion. Compare the UI, API, batch, recovery, and resumed-flow paths.
 
 **WebAuthn and passkey verification**
-At registration, bind challenge, RP ID, expected origin, credential, user/userHandle, algorithm, and policy-required user verification to the initiating session. At authentication, verify challenge, RP/origin, credential membership, signature, and intended user presence/verification. Check account-discovery and linking flows for userHandle or credential-to-account confusion. Signature-counter handling is meaningful only when the product treats regressions as a clone signal.
+At registration, bind these items to the session that starts the registration: the challenge, the RP ID, the expected origin, the credential, the user and userHandle, the algorithm, and the user verification that the policy requires. At authentication, verify the challenge, the RP and origin, the credential membership, the signature, and the intended user presence or verification. Check the account-discovery and linking flows for userHandle or credential-to-account confusion. Handling of the signature counter is meaningful only when the product treats regressions as a clone signal.
 
 **Account linking and identity collision**
-Adding an IdP, passkey, email, phone, device, or external account to an existing account must require a current authenticated session, verified ownership of the new identity, policy-required step-up, and callback state bound to the account that initiated linking. Review unlink/relink and invite-acceptance paths for verified-identifier or tenant collisions.
+The code adds an IdP, a passkey, an email, a phone, a device, or an external account to an existing account. This action must require a current authenticated session. It must require verified ownership of the new identity. It must require the step-up that policy requires. It must require callback state that is bound to the account that starts the linking. Review the unlink, relink, and invite-acceptance paths for collisions of verified identifiers or tenants.
 
 **Password reset and broader recovery**
-Recovery tokens, support/admin recovery, backup codes, device migration, and email or phone change often become the weakest authentication path. Verify token randomness, user/action binding, expiry, one-time state, rate/accounting controls, delivery URL trust, and invalidation of prior tokens and sessions. Different responses that only reveal public account existence are not automatically security findings.
+Recovery tokens, support and admin recovery, backup codes, device migration, and email or phone change often become the weakest authentication path. Verify these items: the token randomness, the user and action binding, the expiry, the one-time state, the rate and accounting controls, and the trust of the delivery URL. Also verify that the code invalidates prior tokens and sessions. Different responses that only reveal public account existence are not automatically security findings.
 
 ## API-key and mTLS attack classes (subagent_type: `general`)
 
 **API-key scope and resource binding**
-A key authenticates to broader tenants, resources, actions, or environments than its server-side record grants, or request parameters override those bindings. Review key lookup, prefix/full-secret verification, type confusion between publishable and secret keys, scope checks, rotation, revocation caches, and bulk endpoints.
+A key authenticates to more tenants, resources, actions, or environments than its server-side record grants. Alternatively, request parameters override those bindings. Review the key lookup and the prefix and full-secret verification. Review the type confusion between publishable and secret keys. Review the scope checks, rotation, revocation caches, and bulk endpoints.
 
 **API-key exposure and unsafe transport**
-Keys appear in client bundles, URLs, redirects, logs, error paths, build artifacts, or responses accessible to a lower-trust principal. A public identifier called a key is not a secret. Confirm key type and the authority gained by disclosure.
+Keys appear in client bundles, URLs, redirects, logs, error paths, build artifacts, or responses that a lower-trust principal can access. A public identifier that is called a key is not a secret. Confirm the key type and the authority that the disclosure gives.
 
 **mTLS peer and application-identity confusion**
-A process trusts client-certificate identity headers from any network peer, verifies a chain but maps attacker-influenceable subject text to an account incorrectly, or accepts a certificate for the wrong trust domain, extended usage, audience, or validity policy. Where a trusted proxy terminates mTLS, verify only that proxy can connect, it removes incoming identity headers, and the backend binds the sanitized identity to the request.
+One of these faults exists. A process trusts client-certificate identity headers from any network peer. A process verifies a chain but maps attacker-influenceable subject text to an account incorrectly. A process accepts a certificate for the wrong trust domain, extended usage, audience, or validity policy. A trusted proxy can terminate mTLS. In that case, verify only these points: only that proxy can connect, it removes incoming identity headers, and the backend binds the sanitized identity to the request.
 
 **Certificate lifecycle fallback**
-Expired, revoked, missing, or renewal-failed certificates cause silent fallback to bearer-only or anonymous operation, or long-lived pooled connections retain authorization after revocation. Missing deployment revocation data makes the result `needs_validation`; an in-repo fail-open branch is source-confirmable.
+Expired, revoked, missing, or renewal-failed certificates cause a silent fallback to bearer-only or anonymous operation. Alternatively, long-lived pooled connections keep their authorization after revocation. If deployment revocation data is missing, the result is `needs_validation`. The source can confirm a fail-open branch in the repository.
 
 ## Universal moves (apply across the above)
 
-- Walk issue → store → transmit → consume → refresh → revoke for every credential and challenge. Compare normal, error, retry, migration, legacy, and account-switch paths.
-- Enumerate every door to the same identity and every route to the same sensitive operation. The effective policy is the weakest parallel path, not the most polished UI.
-- Diff parser, proxy, router, cache, and application normalization side by side. For local validation, feed identical bounded request fixtures into each component rather than sending traffic to a live deployment.
-- For recovery and linking, draw the account before/after graph. Each edge must name the current principal, proof of the new identity, required assurance, callback/session binding, and revocation effect.
+- Follow this path for every credential and challenge: issue, store, transmit, consume, refresh, revoke. Compare the normal, error, retry, migration, legacy, and account-switch paths.
+- List every door to the same identity and every route to the same sensitive operation. The effective policy is the weakest parallel path. It is not the most polished UI.
+- Compare the normalization of the parser, proxy, router, cache, and application side by side. For local validation, give identical bounded request fixtures to each component. Do not send traffic to a live deployment.
+- For recovery and linking, draw the account graph before and after. Each edge must name the current principal, the proof of the new identity, the required assurance, the callback and session binding, and the revocation effect.
 
 ## Validation rules (apply before reporting ANY finding here)
 
-1. Apply a source-visibility gate. Proxy chains, edge cache keys, IdP policy, certificate trust, browser cookie behavior, secrets, and deployed auth modes may be outside the repository. Record a precise `needs_validation` candidate instead of asserting missing infrastructure behavior.
-2. For framing and cache findings, name both components and the divergent parse/key. Confirm cross-request, cross-user, or private-response impact with bounded local fixtures.
-3. For token, MFA, passkey, account-link, recovery, API-key, and mTLS findings, cite the verification line and missing principal/session/resource/origin/audience/action/assurance binding. Prove the server accepts the invalid transition or credential.
-4. For CSRF, name the ambient credential, state-changing route, accepted cross-site request shape, browser cookie policy, and missing effective check. Read-only actions and routes requiring a non-ambient bearer token do not qualify.
-5. Verify framework and library defaults. If version or configuration is unknown, use `needs_validation`; do not turn an unverified critical claim into a lower-severity confirmed finding.
-6. Return `confirmed` only with a complete source trace and observable unauthorized identity, state, or disclosure. For `needs_validation`, name the missing fact and safe local or owner-observed check that resolves it.
+1. Apply a source-visibility gate. These items can be outside the repository: proxy chains, edge cache keys, IdP policy, certificate trust, browser cookie behavior, secrets, and deployed auth modes. Record a precise `needs_validation` candidate. Do not assert the behavior of missing infrastructure.
+2. For framing and cache findings, name both components and the divergent parse or key. Confirm the cross-request, cross-user, or private-response impact with bounded local fixtures.
+3. For token, MFA, passkey, account-link, recovery, API-key, and mTLS findings, cite the verification line. Also cite the missing principal, session, resource, origin, audience, action, or assurance binding. Prove that the server accepts the invalid transition or credential.
+4. For CSRF, name the ambient credential, the state-changing route, the accepted cross-site request shape, the browser cookie policy, and the missing effective check. Read-only actions do not qualify. Routes that require a non-ambient bearer token do not qualify.
+5. Verify the defaults of the framework and the library. If the version or the configuration is unknown, use `needs_validation`. Do not turn an unverified critical claim into a confirmed finding with a lower severity.
+6. Return `confirmed` only with a complete source trace and an observable unauthorized identity, state, or disclosure. For `needs_validation`, name the missing fact. Also name the safe local or owner-observed check that resolves it.

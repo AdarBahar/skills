@@ -1,19 +1,19 @@
 ---
 name: code-review
-description: Reviews a GitHub pull request with independent agents, scores each finding for confidence, and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode when the user asks for a quick or fast review. Full mode uses five review agents. Quick mode uses two.
+description: Reviews a GitHub pull request with independent agents. Scores each finding for confidence and posts only the findings that pass. Use when the user asks to review a PR or run a code review. Use quick mode for a quick or fast review. Full mode uses five agents. Quick mode uses two.
 allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*)
 ---
 
-Provide a code review for the given pull request.
+Do a code review of the given pull request.
 
 ## Choosing the depth
 
-This skill has two modes. Pick based on how the user asked:
+This skill has two modes. Select the mode from the request of the user:
 
-- **Quick mode** — the user said "quick", "fast", "quick review", "fast code review", or passed `quick`/`fast` as an argument. Run the **Quick review process** below.
-- **Full mode** — anything else ("run a code review", "review PR #123", `/code-review <url>`). Run the **Full review process** below.
+- **Quick mode** - the user said "quick", "fast", "quick review", "fast code review", or gave `quick` or `fast` as an argument. Do the **Quick review process** below.
+- **Full mode** - any other request ("run a code review", "review PR #123", `/code-review <url>`). Do the **Full review process** below.
 
-If the request is ambiguous, default to full mode. State which mode you are running in your first message so the user can redirect before the agents spend tokens.
+If the request is not clear, use full mode. In your first message, state the mode that you use. This lets the user change the mode before the agents use tokens.
 
 The confidence threshold is **70** in both modes.
 
@@ -21,40 +21,40 @@ The confidence threshold is **70** in both modes.
 
 ## Full review process
 
-Follow these steps precisely:
+Do these steps exactly:
 
-1. Use a Haiku agent to check if the pull request (a) is closed, (b) is a draft, (c) does not need a code review (eg. because it is an automated pull request, or is very simple and obviously ok), or (d) already has a code review from you from earlier. If so, do not proceed.
-2. Use another Haiku agent to give you a list of file paths to (but not the contents of) any relevant CLAUDE.md files from the codebase: the root CLAUDE.md file (if one exists), as well as any CLAUDE.md files in the directories whose files the pull request modified
-3. Use a Haiku agent to view the pull request, and ask the agent to return a summary of the change
-4. Then, launch 5 parallel Sonnet agents to independently code review the change. The agents should do the following, then return a list of issues and the reason each issue was flagged (eg. CLAUDE.md adherence, bug, historical git context, etc.):
-   a. Agent #1: Audit the changes to make sure they comply with the CLAUDE.md. Note that CLAUDE.md is guidance for Claude as it writes code, so not all instructions will be applicable during code review.
-   b. Agent #2: Read the file changes in the pull request, then do a shallow scan for obvious bugs. Avoid reading extra context beyond the changes, focusing just on the changes themselves. Focus on large bugs, and avoid small issues and nitpicks. Ignore likely false positives.
-   c. Agent #3: Read the git blame and history of the code modified, to identify any bugs in light of that historical context
-   d. Agent #4: Read previous pull requests that touched these files, and check for any comments on those pull requests that may also apply to the current pull request.
-   e. Agent #5: Read code comments in the modified files, and make sure the changes in the pull request comply with any guidance in the comments.
-5. For each issue found in #4, launch a parallel Haiku agent that takes the PR, issue description, and list of CLAUDE.md files (from step 2), and returns a score to indicate the agent's level of confidence for whether the issue is real or false positive. To do that, the agent should score each issue on a scale from 0-100, indicating its level of confidence. For issues that were flagged due to CLAUDE.md instructions, the agent should double check that the CLAUDE.md actually calls out that issue specifically. Use the rubric in **Scoring rubric** below, and give it to the agent verbatim.
-6. Filter out any issues with a score less than 70. If there are no issues that meet this criteria, do not proceed.
-7. Use a Haiku agent to repeat the eligibility check from #1, to make sure that the pull request is still eligible for code review.
-8. Finally, use the gh bash command to comment back on the pull request with the result, using the **Full comment format** below. When writing your comment, keep in mind to:
-   a. Keep your output brief
-   b. Avoid emojis
-   c. Link and cite relevant code, files, and URLs
+1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you. A pull request does not need a code review if it is automated, or if it is very simple and obviously correct.
+2. Use a different Haiku agent to give you a list of file paths to the relevant CLAUDE.md files. Do not request the contents of the files. Include the root CLAUDE.md file (if one exists). Also include each CLAUDE.md file in the directories of the files that the pull request changed.
+3. Use a Haiku agent to view the pull request. Ask the agent to return a summary of the change.
+4. Start 5 parallel Sonnet agents to review the change independently. Each agent should do the task below. Each agent should return a list of issues and the reason for each issue (for example CLAUDE.md adherence, bug, or historical git context):
+   a. Agent #1: Audit the changes to make sure that they comply with the CLAUDE.md. CLAUDE.md is guidance for Claude when it writes code. Not all of its instructions apply to a code review.
+   b. Agent #2: Read the file changes in the pull request. Then do a shallow scan for obvious bugs. Do not read extra context beyond the changes. Look only at the changes. Find large bugs. Do not report small issues and nitpicks. Ignore likely false positives.
+   c. Agent #3: Read the git blame and history of the code that the pull request changed. Use this historical context to find bugs.
+   d. Agent #4: Read the previous pull requests that changed these files. Check if any comments on those pull requests also apply to the current pull request.
+   e. Agent #5: Read the code comments in the changed files. Make sure that the changes in the pull request comply with the guidance in the comments.
+5. For each issue found in step 4, start a parallel Haiku agent. Give the agent the pull request, the description of the issue, and the list of CLAUDE.md files from step 2. The agent should score each issue on a scale from 0 to 100. The score shows the confidence of the agent that the issue is real and not a false positive. If an issue was flagged because of CLAUDE.md instructions, the agent should double check that the CLAUDE.md names that specific issue. Use the rubric in **Scoring rubric** below. Give the rubric to the agent verbatim.
+6. Remove each issue with a score less than 70. If no issue meets this criterion, do not continue.
+7. Use a Haiku agent to do the eligibility check from step 1 again. This makes sure that the pull request is still eligible for a code review.
+8. Use the gh bash command to add a comment with the result to the pull request. Use the **Full comment format** below. When you write the comment, obey these rules:
+   a. Keep your output brief.
+   b. Do not use emojis.
+   c. Link and cite the relevant code, files, and URLs.
 
 ---
 
 ## Quick review process
 
-A lower-cost, lower-latency pass. It drops the dimensions that are slowest and most context-hungry (git history and prior-PR archaeology) and keeps the two that catch the most per token. Follow these steps precisely:
+This process costs less and takes less time. It does not use the two dimensions that are slowest and need the most context (git history and prior-PR research). It keeps the two dimensions that find the most issues for each token. Do these steps exactly:
 
-1. Use a Haiku agent to check if the pull request (a) is closed, (b) is a draft, (c) does not need a code review, or (d) already has a code review from you from earlier. If so, do not proceed. Ask this agent to also return the PR title, the full 40-char head SHA, and the list of changed files, so no separate summary step is needed.
-2. Launch **2 parallel Sonnet agents** to independently review the change. Each returns a list of issues with the reason each was flagged:
-   a. Agent #1: Read the file changes in the pull request and scan for bugs. Focus on the diff itself; do not pull in broad extra context. Focus on large bugs — correctness, wrong guards, bad math, broken control flow — and avoid nitpicks. Also flag any comment in the changed lines that claims a behavior the code does not implement.
-   b. Agent #2: Locate the root CLAUDE.md and any CLAUDE.md in the directories the PR modified, then audit the changes for compliance. Note that CLAUDE.md is guidance for Claude as it writes code, so not all instructions apply during review. Ignore process instructions (branching, PR checklists, running gates) — CI handles those.
-3. Use a **single** Haiku agent to score **all** issues in one pass (not one agent per issue). Give it the PR, the list of issues, and the CLAUDE.md paths found in step 2. Use the rubric in **Scoring rubric** below, verbatim. For issues flagged due to CLAUDE.md, it must double check that the CLAUDE.md actually calls out that issue specifically.
-4. Filter out any issues with a score less than 70. If there are no issues that meet this criteria, do not proceed.
-5. Comment back on the pull request using the **Quick comment format** below. The comment must be labelled as a quick review so a reader knows the depth it was produced at.
+1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you. Ask this agent to also return the PR title, the full 40-character head SHA, and the list of changed files. Then you do not need a separate summary step.
+2. Start **2 parallel Sonnet agents** to review the change independently. Each agent returns a list of issues and the reason for each issue:
+   a. Agent #1: Read the file changes in the pull request and scan for bugs. Look at the diff itself. Do not use broad extra context. Focus on large bugs, for example correctness errors, wrong guards, bad math, and broken control flow. Do not report nitpicks. Also flag each comment in the changed lines that claims a behavior that the code does not do.
+   b. Agent #2: Find the root CLAUDE.md and each CLAUDE.md in the directories that the PR changed. Then audit the changes for compliance. CLAUDE.md is guidance for Claude when it writes code. Not all of its instructions apply to a review. Ignore process instructions (branching, PR checklists, and running gates). CI does these.
+3. Use a **single** Haiku agent to score **all** issues in one pass. Do not use one agent for each issue. Give the agent the PR, the list of issues, and the CLAUDE.md paths found in step 2. Use the rubric in **Scoring rubric** below, verbatim. For an issue that was flagged because of CLAUDE.md, the agent must double check that the CLAUDE.md names that specific issue.
+4. Remove each issue with a score less than 70. If no issue meets this criterion, do not continue.
+5. Add a comment to the pull request. Use the **Quick comment format** below. Label the comment as a quick review. Then the reader knows the depth of the review.
 
-Quick mode skips the re-check of eligibility, because the run is short enough that the race window is small. If a quick run happens to take a long time, re-check eligibility before commenting.
+Quick mode does not repeat the eligibility check. The run is short, so the risk of a change in the meantime is small. If a quick run takes a long time, do the eligibility check again before you add the comment.
 
 ---
 
@@ -62,35 +62,35 @@ Quick mode skips the re-check of eligibility, because the run is short enough th
 
 Give this to the scoring agent verbatim:
 
-   a. 0: Not confident at all. This is a false positive that doesn't stand up to light scrutiny, or is a pre-existing issue.
-   b. 25: Somewhat confident. This might be a real issue, but may also be a false positive. The agent wasn't able to verify that it's a real issue. If the issue is stylistic, it is one that was not explicitly called out in the relevant CLAUDE.md.
-   c. 50: Moderately confident. The agent was able to verify this is a real issue, but it might be a nitpick or not happen very often in practice. Relative to the rest of the PR, it's not very important.
-   d. 75: Highly confident. The agent double checked the issue, and verified that it is very likely it is a real issue that will be hit in practice. The existing approach in the PR is insufficient. The issue is very important and will directly impact the code's functionality, or it is an issue that is directly mentioned in the relevant CLAUDE.md.
-   e. 100: Absolutely certain. The agent double checked the issue, and confirmed that it is definitely a real issue, that will happen frequently in practice. The evidence directly confirms this.
+   a. 0: Not confident at all. This is a false positive that does not pass a light check, or it is a pre-existing issue.
+   b. 25: Somewhat confident. This can be a real issue, but it can also be a false positive. The agent could not verify that it is a real issue. If the issue is a style issue, the relevant CLAUDE.md did not explicitly name it.
+   c. 50: Moderately confident. The agent verified that this is a real issue, but it can be a nitpick or it does not occur often in practice. Compared to the rest of the PR, it is not very important.
+   d. 75: Highly confident. The agent checked the issue twice and verified that it is very likely a real issue that users will hit in practice. The existing approach in the PR is not sufficient. The issue is very important and directly affects the function of the code, or the relevant CLAUDE.md directly names the issue.
+   e. 100: Absolutely certain. The agent checked the issue twice and confirmed that it is definitely a real issue that will occur often in practice. The evidence directly confirms this.
 
 ---
 
-Examples of false positives, for the review and scoring steps:
+These are examples of false positives, for the review and scoring steps:
 
 - Pre-existing issues
-- Something that looks like a bug but is not actually a bug
-- Pedantic nitpicks that a senior engineer wouldn't call out
-- Issues that a linter, typechecker, or compiler would catch (eg. missing or incorrect imports, type errors, broken tests, formatting issues, pedantic style issues like newlines). No need to run these build steps yourself -- it is safe to assume that they will be run separately as part of CI.
-- General code quality issues (eg. lack of test coverage, general security issues, poor documentation), unless explicitly required in CLAUDE.md
-- Issues that are called out in CLAUDE.md, but explicitly silenced in the code (eg. due to a lint ignore comment)
-- Changes in functionality that are likely intentional or are directly related to the broader change
-- Real issues, but on lines that the user did not modify in their pull request
+- Something that looks like a bug but is not a bug
+- Pedantic nitpicks that a senior engineer would not report
+- Issues that a linter, typechecker, or compiler finds (for example missing or incorrect imports, type errors, broken tests, formatting issues, and pedantic style issues like newlines). Do not run these build steps yourself. Assume that CI runs them separately.
+- General code quality issues (for example lack of test coverage, general security issues, and poor documentation), unless CLAUDE.md requires them
+- Issues that CLAUDE.md names, but the code silences on purpose (for example with a lint ignore comment)
+- Changes in functionality that are probably intentional or directly related to the broader change
+- Real issues, but on lines that the user did not change in the pull request
 
 Notes:
 
-- Do not check build signal or attempt to build or typecheck the app. These will run separately, and are not relevant to your code review.
-- Use `gh` to interact with Github (eg. to fetch a pull request, or to create inline comments), rather than web fetch
-- Make a todo list first
-- You must cite and link each bug (eg. if referring to a CLAUDE.md, you must link it)
+- Do not check the build signal. Do not try to build or typecheck the app. These run separately and are not relevant to your code review.
+- Use `gh` to work with Github (for example to get a pull request, or to create inline comments). Do not use web fetch.
+- Make a todo list first.
+- You must cite and link each bug (for example, if you refer to a CLAUDE.md, you must link it).
 
 ### Full comment format
 
-Follow this format precisely (assuming for this example that you found 3 issues):
+Use this format exactly (in this example, you found 3 issues):
 
 ---
 
@@ -130,7 +130,7 @@ Generated with [Claude Code](https://claude.ai/code)
 
 ### Quick comment format
 
-Identical to the full format, except the heading is `### Code review (quick)` and the no-issues body reads:
+This format is the same as the full format, with two differences. The heading is `### Code review (quick)`. The body for no issues is this text:
 
 ---
 
@@ -142,16 +142,16 @@ Generated with [Claude Code](https://claude.ai/code)
 
 ---
 
-When issues ARE found in quick mode, use the numbered-list body from the full format under the `### Code review (quick)` heading, and append this line before the Generated-with footer:
+If you find issues in quick mode, use the numbered-list body from the full format under the `### Code review (quick)` heading. Add this line before the Generated-with footer:
 
 <sub>Quick review: diff and CLAUDE.md only. Ask for a full review to also check git history and prior PR comments.</sub>
 
 ---
 
-- When linking to code, follow the following format precisely, otherwise the Markdown preview won't render correctly: https://github.com/anthropics/claude-cli-internal/blob/c21d3c10bc8e898b7ac1a2d745bdc9bc4e423afe/package.json#L10-L15
-  - Requires full git sha
-  - You must provide the full sha. Commands like `https://github.com/owner/repo/blob/$(git rev-parse HEAD)/foo/bar` will not work, since your comment will be directly rendered in Markdown.
-  - Repo name must match the repo you're code reviewing
-  - # sign after the file name
-  - Line range format is L[start]-L[end]
-  - Provide at least 1 line of context before and after, centered on the line you are commenting about (eg. if you are commenting about lines 5-6, you should link to `L4-7`)
+- When you link to code, use exactly this format. If you do not, the Markdown preview does not show the link correctly: https://github.com/anthropics/claude-cli-internal/blob/c21d3c10bc8e898b7ac1a2d745bdc9bc4e423afe/package.json#L10-L15
+  - The link needs the full git sha.
+  - You must give the full sha. Commands like `https://github.com/owner/repo/blob/$(git rev-parse HEAD)/foo/bar` do not work, because the system shows your comment directly as Markdown.
+  - The repo name must be the same as the repo that you review.
+  - Put a # sign after the file name.
+  - The line range format is L[start]-L[end].
+  - Give at least 1 line of context before and after the line. Center the range on the line that you comment on (for example, if you comment on lines 5-6, you should link to `L4-7`).

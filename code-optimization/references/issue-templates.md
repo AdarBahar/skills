@@ -1,6 +1,6 @@
 # Issue templates
 
-Use these as the content for the tracking issue and each sub-issue. Adapt field names to the platform (GitHub, GitLab, Jira, etc.). Keep them concise and skimmable — a reviewer should grasp each in under a minute.
+Use these templates as the content for the tracking issue and each sub-issue. Change the field names to fit the platform (GitHub, GitLab, Jira, and others). Keep them short and easy to scan. A reviewer should understand each issue in less than one minute.
 
 ## Tracking issue (parent)
 

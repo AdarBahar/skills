@@ -11,9 +11,9 @@ Use these checks for a target that runs on a shared Linux server. Read the deplo
 
 ## Network
 
-- Services listen on `127.0.0.1` unless a public listener is required and documented.
+- Services listen on `127.0.0.1`, unless a public listener is necessary and documented.
 - Database ports listen only on localhost or a private network.
-- Plain HTTP is not served. Port 80 redirects to HTTPS or does not answer.
+- The server does not serve plain HTTP. Port 80 redirects to HTTPS or does not answer.
 - HTTPS responses send `Strict-Transport-Security`.
 - TLS allows only TLS 1.2 and TLS 1.3.
 
@@ -25,19 +25,19 @@ Use these checks for a target that runs on a shared Linux server. Read the deplo
 
 ## Writes and cross-site requests
 
-- State-changing endpoints accept JSON only, or they check a CSRF token.
-- Endpoints refuse writes from other origins. Check the CORS rules and the cookie `SameSite` setting.
+- State-changing endpoints accept JSON only, or they verify a CSRF token.
+- Endpoints refuse writes from other origins. Verify the CORS rules and the cookie `SameSite` setting.
 
 ## Database
 
 - The runtime role does not own the database. It has no superuser rights and no `CREATE` right.
-- The migration credentials sit in their own file. Only the migration reads that file.
-- Passwords in connection URLs are percent-encoded. Check that the parser accepts the encoded form.
+- The migration credentials are in their own file. Only the migration reads that file.
+- Passwords in connection URLs are percent-encoded. Verify that the parser accepts the encoded form.
 - The connection pool sets a connect timeout and a size limit.
 
 ## Release and extraction
 
-- Check the archive before extraction. Refuse links, special files, absolute paths, and `..` segments.
+- Verify the archive before extraction. Refuse links, special files, absolute paths, and `..` segments.
 - Measure the real unpacked size before extraction. Do not trust the archive metadata.
 - The release excludes `.env` files, `.git`, tests, and development dependencies.
 - Verify a signature or checksum before the release runs.
