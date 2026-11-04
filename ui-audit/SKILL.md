@@ -9,6 +9,19 @@ The goal is one UI that looks like one product. A new element must look like it 
 
 Some rules are adapted from [jakubkrehel/skills](https://github.com/jakubkrehel/skills) (MIT). The original license is in `LICENSE`.
 
+## Read-only: findings, not changes
+
+This skill gives findings and proposed fixes only. It never changes the project.
+
+- Do not edit, create, delete, or move files in the repository.
+- Do not run commands that change the working tree: `git checkout`, `git switch`, `git stash`, `git reset`, `git commit`, `gh pr checkout`, a formatter, or a code generator. `git fetch` is permitted, because it changes only `.git`.
+- Do not change shared tokens, components, settings, or dependencies.
+- Do not open issues, PRs, or comments unless the user asks.
+- In the browser, only look, scroll, resize, and press Tab. Do not submit forms, save, delete, or click actions that change data. The app can be signed in to real data.
+- Temporary files (an export of a branch, a test page) go in a scratch folder outside the repository. Delete them at the end and say so in the report.
+
+At the end of the report, ask the user which findings to fix. A fix is a separate task that starts only when the user asks for it.
+
 ## Evidence, not taste
 
 A finding needs evidence: a file and line, the current code, and a failure that you can show. Examples of a failure are a clip, an overlap, a missing state, a broken contrast pair, or a difference from the project rulebook.
@@ -19,11 +32,18 @@ A value that is different from a general number in Step 4 is not a finding. Deli
 
 Find the type of task:
 
-- **Build:** You add a new feature, page, or element. Do Steps 2, 3, and 4 before you write code. Do the audit after you write code.
+- **Build:** The user asked you to add a feature, page, or element. That task writes the code, not this skill. Use Steps 2, 3, and 4 as the rules for that code. Then audit the new code and report. Do not fix the findings without approval.
 - **Change review:** The user names a branch, a PR, or uncommitted changes. Review only the problems that the change caused.
 - **Screen review:** The user names a page or a flow. Review all of it, including the empty, loading, error, and narrow-width states.
 
-State the scope at the start of the report. If the scope is too large, review one complete flow. State what you did not review.
+State the scope at the start of the report. If the scope is too large, run the mechanical checks (Step 4) on all of it. Do the full review on one complete flow. State what you did not review.
+
+**Make sure that you review the current code:**
+
+1. Run `git fetch`. Compare the local branch with `origin/<default-branch>` (`git rev-list --left-right --count HEAD...origin/<default-branch>`).
+2. If the local branch is behind, tell the user. For a screen review, review `origin/<default-branch>`. Read it with `git show` or `git archive` into a scratch folder outside the repository. Do not check it out.
+3. If you use a running dev server, find which checkout it serves (for example, the working folder of the server process). Compare a visible feature of the page with the code. If they do not match, say which code your browser results come from.
+4. State the reviewed commit (short SHA) in the scope. Give all line numbers against that commit.
 
 ## Step 2: Find the UI rulebook (always do this first)
 
@@ -90,7 +110,7 @@ Use these rules only when the rulebook does not cover a topic, or when you build
 11. **Direction:** For Hebrew or another RTL language, use logical properties (`ms-`, `me-`, `ps-`, `pe-`, `margin-inline-start`). Wrap mixed-direction values in `<bdi>`.
 12. **Copy:** Buttons start with a verb. Errors tell the user how to correct the problem. Empty states tell the user the next step.
 
-For mechanical checks, read [detection-patterns.md](detection-patterns.md). Search the code for each pattern.
+For mechanical checks, read [detection-patterns.md](detection-patterns.md). Search the code for each pattern. A "failure" pattern can be a finding. A "hygiene" pattern becomes a finding only when you show a failure. If not, put it under **Notes** in the report.
 
 ## Step 5: Severity
 
@@ -128,19 +148,19 @@ For a branch, a PR, or uncommitted work:
 
 Do not run `git checkout`, `git switch`, `git stash`, or `gh pr checkout`. Read a PR with `git fetch origin pull/<n>/head:refs/remotes/pr/<n>` and `git show`.
 
-## Step 7: Fix
+## Step 7: Proposed fixes
 
-Do not change files during a review, unless the user asks for fixes. During a build, fix the HIGH and MEDIUM items in the new code.
+Write a proposed fix in the `After` column of each finding. Do not apply it (see "Read-only").
 
-When more than one fix works, use the first that works:
+When more than one fix works, propose the first that works:
 
 1. **Delete:** remove a separator, an animation, or an ARIA attribute that is not necessary.
 2. **Use the platform:** a native element or the browser focus ring.
 3. **Reuse:** an existing token, component, or spacing step.
 4. **Correct:** change the value to the correct one.
-5. **Add:** a new token, component, or attribute. This needs approval when it is shared.
+5. **Add:** a new token, component, or attribute.
 
-Do not change shared tokens, shared components, or other pages without approval.
+Mark each fix that changes a shared token, a shared component, or other pages. The user must approve these fixes separately.
 
 ## Step 8: Verify
 
@@ -151,6 +171,21 @@ Without a browser, check the code only. With a browser (Claude in Chrome or the 
 - Dark and light mode.
 - A complete keyboard pass with Tab.
 - The RTL mirror if the page uses Hebrew.
+- Contrast (see below).
+
+**320px width.** Chrome has a minimum window width, near 500px. If the window cannot shrink to 320px, use one of these methods:
+
+- Device emulation in DevTools, if the browser tool supports it.
+- A temporary HTML page in a scratch folder outside the repository, with `<iframe src="<page URL>" width="320" height="800">`. Open that page in the browser. The page URL must permit the frame (a local dev server usually does).
+
+Record the viewport width that you used. If the width was more than 320px, mark 320px as `Not verified`.
+
+**Contrast.** Use one method each time:
+
+1. List each text/background token pair and each border, icon, or focus-ring/background pair that the UI uses. Do this for each theme.
+2. Compute the WCAG 2 contrast ratio from the token values with a short script: relative luminance of each sRGB color, then `(L1 + 0.05) / (L2 + 0.05)`.
+3. For a color with alpha, first blend it on its real background.
+4. Compare each ratio with Step 4, rule 4. Report each failed pair with its ratio. Measure 1 or 2 pairs in the live page to confirm the token values.
 
 Mark each check that you did not run as `Not verified`. Do not report a visual result that you did not see.
 
@@ -164,10 +199,16 @@ Mark each check that you did not run as `Not verified`. Do not report a visual r
 |---|---|---|---|---|---|
 | HIGH | Introduced | `src/Card.tsx:42` | `<div onClick>` | `<button>` | The control does not work with the keyboard |
 
-The `Status` column is necessary only for a change review. List the values that you rounded to a token. If there are no findings, write "No actionable UI findings."
+The `Status` column is necessary only for a change review. Keep each cell short. If a `Before` or `After` value is longer than a few words, write "see below" in the cell. Then put the full value in a numbered list under the table. List the values that you rounded to a token. If there are no findings, write "No actionable UI findings."
+
+**What passed:** a short list of the checks that found no problem.
+
+**Notes:** hygiene pattern matches with no failure that you showed (see `detection-patterns.md`). Put them on one line each. They are not findings.
 
 **Verification:** each check, the command or steps, and the result. List the `Not verified` checks separately.
 
 **Verdict:**
 - `Block`: one or more HIGH findings remain.
 - `Approve`: no HIGH findings remain. MEDIUM and LOW findings stay in the table as work to do.
+
+**Next step:** Name the temporary files that you deleted. Then ask the user which findings to fix. Do not start a fix in the same turn.

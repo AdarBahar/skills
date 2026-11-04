@@ -12,7 +12,7 @@ Some rules are adapted from [jakubkrehel/skills](https://github.com/jakubkrehel/
 - **Reviews changes by cause.** For a branch or a PR, it marks each finding as `Introduced`, `Regression`, or `Pre-existing`. It also reviews the pages that use a changed component or token.
 - **Gives one report.** The report has one row for each root cause, `Before` and `After` columns, the checks that did not run, and a `Block` or `Approve` verdict.
 
-A review does not change files unless you ask for fixes.
+The skill is read-only. It gives findings and proposed fixes, and it never changes the project. A fix is a separate task that starts only when you ask for it.
 
 ## Files
 
