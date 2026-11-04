@@ -10,7 +10,16 @@ Do a code review of the given pull request.
 
 - A "Haiku agent" is a subagent with `model: haiku` (Haiku 5.5). Use it for checks, lists, summaries, and scores.
 - A "Sonnet agent" is a subagent with `model: sonnet` (Sonnet 5.5). Use it for the review agents.
+- An "Opus agent" is a subagent with `model: opus` (Opus 5.5). Use it only for the two deep review agents of the full review (step 4, agents #2 and #3).
+- Set the model in each subagent call. Do not use the default model.
 - Do not change these models. If a model is not available, use the session model and say so in the review.
+
+| Mode | Checks, lists, summaries, scores | Review agents |
+| --- | --- | --- |
+| Quick (tiers 1 and 2) | Haiku | Sonnet |
+| Full (tier 3, or the user names full) | Haiku | Opus for #2 (bug scan) and #3 (history); Sonnet for #1 (CLAUDE.md), #4 (earlier PRs), and #5 (code comments) |
+
+Agents #2 and #3 need the deepest reasoning: they find bugs in a large change. The other three agents mostly read text and compare it with rules.
 
 ## Choosing the depth
 
@@ -88,7 +97,7 @@ Do these steps exactly:
 1. Use a Haiku agent to check the pull request. Do not continue if any of these is true: it is closed; it is a draft; it does not need a code review; it already has a code review from you, unless the user asks for a new review. A pull request does not need a code review if it is automated, or if it is very simple and obviously correct.
 2. Use a different Haiku agent to give you a list of file paths to the relevant CLAUDE.md files. Do not request the contents of the files. Include the root CLAUDE.md file (if one exists). Also include each CLAUDE.md file in the directories of the files that the pull request changed.
 3. Use a Haiku agent to view the pull request. Ask the agent to return a summary of the change.
-4. Start 5 parallel Sonnet agents to review the change independently. Each agent should do the task below. Each agent should return a list of issues and the reason for each issue (for example CLAUDE.md adherence, bug, or historical git context):
+4. Start 5 parallel review agents to review the change independently: Opus agents for #2 and #3, and Sonnet agents for #1, #4, and #5. Each agent should do the task below. Each agent should return a list of issues and the reason for each issue (for example CLAUDE.md adherence, bug, or historical git context):
    a. Agent #1: Audit the changes to make sure that they comply with the CLAUDE.md. CLAUDE.md is guidance for Claude when it writes code. Not all of its instructions apply to a code review.
    b. Agent #2: Read the file changes in the pull request. Then do a shallow scan for obvious bugs. Do not read extra context beyond the changes. Look only at the changes. Find large bugs. Do not report small issues and nitpicks. Ignore likely false positives. Also check the items in **Review scope** that apply to the change.
    c. Agent #3: Read the git blame and history of the code that the pull request changed. Use this historical context to find bugs.
