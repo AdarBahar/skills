@@ -39,6 +39,8 @@ Find the type of task:
 
 State the scope at the start of the report. If the scope is too large, run the mechanical checks (Step 4) on all of it. Do the full review on one complete flow. State what you did not review.
 
+**Shared components are in scope.** A screen uses shared components that are in other files: modal, dialog, side panel, menu, toast, table, form fields. Find the shared components that the screens in scope import or open. Add their component files and their style rules to the scope. A problem in a shared component is a problem on each screen that uses it.
+
 **Make sure that you review the current code:**
 
 1. Run `git fetch`. Compare the local branch with `origin/<default-branch>` (`git rev-list --left-right --count HEAD...origin/<default-branch>`).
@@ -68,7 +70,7 @@ Write a short summary of the rulebook:
 
 Name the documents that you found, or say that there are none. If the project has no rulebook, get the rules from the existing pages. Offer to write `docs/UI-RULES.md` from the summary.
 
-**Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet` (Sonnet 5.5). Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
+**Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet` (Sonnet 5.5). Set the model in the call. Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
 
 ## Step 3: New feature, page, or element in an existing UI
 
@@ -117,9 +119,9 @@ Use these rules only when the rulebook does not cover a topic, or when you build
 
 The mechanical checks use the fixed list in [detection-patterns.md](detection-patterns.md). Run each pattern on each run, so that two runs give the same coverage.
 
-1. If you can start subagents, start one subagent with `model: haiku` (Haiku 5.5). Give it:
+1. If you can start subagents, start one subagent with `model: haiku` (Haiku 5.5). Set the model in the call. Do not use the default model. Give it:
    - The full text of `detection-patterns.md`.
-   - The folder to search (the repository, or the scratch export from Step 1) and the files in scope.
+   - The folder to search (the repository, or the scratch export from Step 1) and the files in scope, including the shared components and their style rules.
    - These instructions: "Search for each pattern ID. For each ID, return the matches as `path:line` with the matched text, or 'no match'. Do not skip an ID. Do not judge the matches. Change nothing."
 2. If you cannot start subagents, do the same search yourself, ID by ID.
 3. Check that the result has every pattern ID. Run the search again for each missing ID.
@@ -127,6 +129,14 @@ The mechanical checks use the fixed list in [detection-patterns.md](detection-pa
 5. A "Failure" match that you confirm is a finding. A "Hygiene" match becomes a finding only when you show a failure. If not, put it under **Notes** in the report.
 
 Some rules need judgment, not a search: rule 3 (one primary action), rule 7 (color as the only signal), and rule 12 (copy). Check them yourself while you read the pages in scope.
+
+**State paths in the code.** For each data view in scope, read the loading, empty, and error branches in the code (for example a `catch` block, an `error` state, or a status check). This check needs no browser. For each error branch, check these points:
+
+- The message matches the cause. For example, a network error must not say "not found".
+- The user can recover: Try again, a link back, or a clear next step.
+- The view uses the shared loading, empty, and error components of the rulebook.
+
+Rule 12 can be `Clear` only after this check. In the coverage table, name the error branches that you read.
 
 ## Step 5: Severity
 
@@ -138,6 +148,7 @@ Some rules need judgment, not a search: rule 3 (one primary action), rule 7 (col
 
 - An interactive control with no accessible name.
 - A control with no visible focus indicator.
+- A focus indicator with a contrast under 3:1 against an adjacent color (WCAG 1.4.11). A shared focus-ring token under 3:1 is HIGH, also when it passes on some surfaces.
 - A control that works with a pointer but not with the keyboard.
 - Motion that ignores `prefers-reduced-motion`.
 - Content or a control that is clipped or not reachable at 320px width or 200% zoom.
@@ -198,12 +209,13 @@ Without a browser, check the code only. With a browser (Claude in Chrome or the 
 - The RTL mirror if the page uses Hebrew.
 - Contrast (see below).
 
-**320px width.** Chrome has a minimum window width, near 500px. If the window cannot shrink to 320px, use one of these methods:
+**320px width.** Chrome has a minimum window width, near 500px. Use the first method that works:
 
-- Device emulation in DevTools, if the browser tool supports it.
-- A temporary HTML page in a scratch folder outside the repository, with `<iframe src="<page URL>" width="320" height="800">`. Open that page in the browser. The page URL must permit the frame (a local dev server usually does).
+1. Device emulation in DevTools, or a resize of the window, if the browser tool supports it. This gives a real 320px viewport.
+2. A temporary HTML page in a scratch folder outside the repository, with `<iframe src="<page URL>" width="320" height="800">`. This works only when the page needs no sign-in. A signed-in app usually shows its sign-in screen in the frame, because the frame does not get the session cookie. Do not sign in inside the frame.
+3. A root zoom in your own tab: `document.documentElement.style.zoom = "<viewport width / 320>"`. This is a simulation. Container queries react to it, but `@media` width rules do not. Remove the zoom after the check.
 
-Record the viewport width that you used. If the width was more than 320px, mark 320px as `Not verified`.
+Record the method and the viewport width. Mark each result from method 3 as "simulated" in the findings and in the Verification section. If no method worked, mark 320px as `Not verified`.
 
 **Contrast.** Use one method each time:
 
@@ -240,7 +252,7 @@ The `Status` column is necessary only for a change review. Keep each cell short.
 
 **Notes:** hygiene pattern matches with no failure that you showed (see `detection-patterns.md`). Put them on one line each. They are not findings.
 
-**Verification:** each check, the command or steps, and the result. List the `Not verified` checks separately.
+**Verification:** each check, the command or steps, and the result. Name each subagent that you started, with its model (for example "pattern search: Haiku 5.5"). If a subagent did not use the model that this skill names, say so. List the `Not verified` checks separately.
 
 **Verdict:**
 - `Block`: one or more HIGH findings remain.
