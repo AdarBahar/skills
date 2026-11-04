@@ -1,0 +1,173 @@
+---
+name: ui-audit
+description: Audit UI code for consistency with the project's existing design rules and for basic UI/UX and accessibility quality. Use when you create, change, or review a frontend page, component, or style file (HTML, JSX/TSX, Vue, CSS, Tailwind classes). Use especially when you add a new feature, page, or element to a UI that already exists. Do not use for backend-only changes.
+---
+
+# UI Audit
+
+The goal is one UI that looks like one product. A new element must look like it was always part of the page.
+
+Some rules are adapted from [jakubkrehel/skills](https://github.com/jakubkrehel/skills) (MIT). The original license is in `LICENSE`.
+
+## Evidence, not taste
+
+A finding needs evidence: a file and line, the current code, and a failure that you can show. Examples of a failure are a clip, an overlap, a missing state, a broken contrast pair, or a difference from the project rulebook.
+
+A value that is different from a general number in Step 4 is not a finding. Deliberate project choices are not findings. A documented project rule decides questions of taste. It never excuses an escalation trigger (Step 5).
+
+## Step 1: Find the scope
+
+Find the type of task:
+
+- **Build:** You add a new feature, page, or element. Do Steps 2, 3, and 4 before you write code. Do the audit after you write code.
+- **Change review:** The user names a branch, a PR, or uncommitted changes. Review only the problems that the change caused.
+- **Screen review:** The user names a page or a flow. Review all of it, including the empty, loading, error, and narrow-width states.
+
+State the scope at the start of the report. If the scope is too large, review one complete flow. State what you did not review.
+
+## Step 2: Find the UI rulebook (always do this first)
+
+Look in this order:
+
+1. A design-system skill for this project (for example `portfolio-tracker-design`). If one exists, load it. Its rules override Step 4.
+2. Project documents: `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `DESIGN*.md`, `STYLEGUIDE*`, `docs/UI-RULES.md`, Storybook docs.
+3. Design tokens: `tailwind.config.*`, CSS custom properties (`:root { --... }`), `theme.ts`, `globals.css`.
+4. The shared component library: `components/ui/`, `components/common/`, or similar.
+5. Two or three existing pages near the new element. Use them as the reference implementation.
+
+Write a short summary of the rulebook:
+
+- Spacing scale and the usual gaps (sections, cards, form fields).
+- Font families, type scale, weights.
+- Color tokens by role: background, surface, border, text, accent, success, danger.
+- Corner radius, borders, shadow or elevation.
+- Shared components: button, input, card, modal, table, toast.
+- Theme modes (dark, light), breakpoints, motion easing and duration.
+- Vocabulary: the words that the UI uses for the same things.
+
+Name the documents that you found, or say that there are none. If the project has no rulebook, get the rules from the existing pages. Offer to write `docs/UI-RULES.md` from the summary.
+
+## Step 3: New feature, page, or element in an existing UI
+
+When the UI already exists, consistency has priority over Step 4.
+
+**Map each value to the rulebook:**
+
+| In the new code | Use |
+|---|---|
+| A value that equals a token | That token |
+| A value with no token | The nearest token. List it in the report as "rounded". |
+| A rounding of more than 2px, or a color on a different step | Stop and ask the user |
+| A control that exists in the shared library | That component, with the correct variant |
+| A control with no shared equivalent | Plain markup. Ask if a new shared component is necessary. |
+
+**Rules:**
+
+- Do not add hard-coded hex colors, pixel values, or arbitrary Tailwind values (`p-[13px]`, `text-[#3a3a3a]`).
+- Copy the layout pattern from a similar page: header, section spacing, card grid, form layout.
+- Use the same words, capitalization, and icon set as the rest of the UI.
+- Make the new element work in all theme modes and at all breakpoints that the page supports.
+- Give the new element all its states: hover, focus-visible, active, disabled, loading, empty, error.
+- If sibling pages show the same type of control, add it to all of them, or tell the user.
+- Do not add a new token or a new component variant without approval.
+- Do not change code outside the feature. Do not make cleanups on other pages.
+- If the existing UI breaks a rule in Step 4, follow the existing UI. Report the problem as `Pre-existing`.
+
+## Step 4: General rules (defaults)
+
+Use these rules only when the rulebook does not cover a topic, or when you build a new UI.
+
+1. **Spacing:** Use a 4px base unit. 1px and 2px borders are permitted. The gap between groups is a minimum of 2× the gap inside a group.
+2. **Typography:** Use a maximum of 2 font families. Use only the sizes in the type scale. Show hierarchy with weight and color. Use `tabular-nums` on prices, counters, timers, and number columns.
+3. **Color:** Use color tokens only, by role. Keep large areas neutral. Use the accent color only for the primary action, links, focus, and status. Give each view one filled primary action.
+4. **Contrast:** Body text 4.5:1. Large text (24px, or 18.67px bold) 3:1. UI borders, icons, and focus rings 3:1. Check both themes.
+5. **Target size:** WCAG 2.2 AA requires 24×24px. Use 44×44px on touch screens and 40×40px on desktop when the density permits. The hit area can be larger than the visible element. Hit areas must not overlap.
+6. **Focus and keyboard:** Style `:focus-visible`. Do not remove the outline without a replacement. All actions work with the keyboard. Modals trap focus, close with Escape, and return focus to the trigger.
+7. **Semantics:** Use `<button>` for actions and `<a href>` for navigation. Each input has a `<label>`. Icon-only buttons have an `aria-label`. Do not use color as the only signal.
+8. **Responsive:** No horizontal scroll at 320px width or at 200% zoom. Mobile inputs use 16px text (no iOS zoom). Text containers use `min-height`, not `height`.
+9. **Surfaces:** Outer radius = inner radius + padding. Use borders for structure and shadows for elevation.
+10. **Motion:** Use the existing easing and duration tokens. Respect `prefers-reduced-motion`. Use transitions, not keyframes, for state changes. Do not use `transition: all`.
+11. **Direction:** For Hebrew or another RTL language, use logical properties (`ms-`, `me-`, `ps-`, `pe-`, `margin-inline-start`). Wrap mixed-direction values in `<bdi>`.
+12. **Copy:** Buttons start with a verb. Errors tell the user how to correct the problem. Empty states tell the user the next step.
+
+For mechanical checks, read [detection-patterns.md](detection-patterns.md). Search the code for each pattern.
+
+## Step 5: Severity
+
+- **HIGH:** The problem stops a task, hides content or a control, misleads the user, or repeats across the product.
+- **MEDIUM:** The problem makes the UI harder to understand or use, or breaks consistency with the rulebook.
+- **LOW:** A small polish problem in one location.
+
+**Escalation triggers.** These are always HIGH, on every surface:
+
+- An interactive control with no accessible name.
+- A control with no visible focus indicator.
+- A control that works with a pointer but not with the keyboard.
+- Motion that ignores `prefers-reduced-motion`.
+- Content or a control that is clipped or not reachable at 320px width or 200% zoom.
+- Text that fails its contrast ratio.
+- A state or meaning that only color shows.
+- A destructive action with no confirmation, no undo, and no distinct style.
+- Truncated content with no way to see the full value.
+- An error message that does not tell the user how to recover.
+- A semantic color used against its meaning (for example, the danger color on a safe action).
+
+## Step 6: Change review
+
+For a branch, a PR, or uncommitted work:
+
+1. Find the base with `git merge-base origin/<default-branch> HEAD`. Include untracked files from `git ls-files --others --exclude-standard`.
+2. Do not review lockfiles, `dist/`, `build/`, snapshots, or vendored code. Name what you excluded.
+3. **Blast radius.** For each changed component, review its direct consumers. For a changed token or theme value, search for the token name. Review a maximum of 5 consumers. Say how many you did not review.
+4. **Removed lines.** Search the `-` side of the diff for removed `aria-`, `alt=`, `<label`, `focus`, `outline`, `tabindex`, `prefers-reduced-motion`, `dir=`, and logical properties. A removal is a regression only if nothing in the change replaces it.
+5. **Classify** each finding by cause:
+   - `Introduced`: the change created it.
+   - `Regression`: the change made something worse that was correct before.
+   - `Pre-existing`: the problem was there before the change, and the change did not make it worse. Report a maximum of 3.
+6. **Incomplete change.** Read the PR title and the commit messages. Look for missing states, missing theme modes, and sibling pages without the new control.
+
+Do not run `git checkout`, `git switch`, `git stash`, or `gh pr checkout`. Read a PR with `git fetch origin pull/<n>/head:refs/remotes/pr/<n>` and `git show`.
+
+## Step 7: Fix
+
+Do not change files during a review, unless the user asks for fixes. During a build, fix the HIGH and MEDIUM items in the new code.
+
+When more than one fix works, use the first that works:
+
+1. **Delete:** remove a separator, an animation, or an ARIA attribute that is not necessary.
+2. **Use the platform:** a native element or the browser focus ring.
+3. **Reuse:** an existing token, component, or spacing step.
+4. **Correct:** change the value to the correct one.
+5. **Add:** a new token, component, or attribute. This needs approval when it is shared.
+
+Do not change shared tokens, shared components, or other pages without approval.
+
+## Step 8: Verify
+
+Without a browser, check the code only. With a browser (Claude in Chrome or the `run` skill), check these:
+
+- The widths that the page supports, and 320px.
+- 200% zoom.
+- Dark and light mode.
+- A complete keyboard pass with Tab.
+- The RTL mirror if the page uses Hebrew.
+
+Mark each check that you did not run as `Not verified`. Do not report a visual result that you did not see.
+
+## Step 9: Report
+
+**Scope:** the task type, the files or pages, the rulebook documents that you found, and what you excluded.
+
+**Findings:** one row for each root cause, with all locations in the same row. Report a token or shared-component problem once, against its source. Order by severity, then by the number of locations.
+
+| Severity | Status | Location | Before | After | Why |
+|---|---|---|---|---|---|
+| HIGH | Introduced | `src/Card.tsx:42` | `<div onClick>` | `<button>` | The control does not work with the keyboard |
+
+The `Status` column is necessary only for a change review. List the values that you rounded to a token. If there are no findings, write "No actionable UI findings."
+
+**Verification:** each check, the command or steps, and the result. List the `Not verified` checks separately.
+
+**Verdict:**
+- `Block`: one or more HIGH findings remain.
+- `Approve`: no HIGH findings remain. MEDIUM and LOW findings stay in the table as work to do.
