@@ -71,7 +71,7 @@ Some folders are copies of skills from other repositories. Each one has an `UPST
 |---|---|---|
 | `react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), folder `skills/react-best-practices` | MIT |
 
-Do not edit a copied folder. A workflow in `.github/workflows/` copies the upstream folder once a week. If the copy differs, the workflow opens a pull request. Read the diff, then merge it. The prose of a copied skill is not in ASD-STE100, because a rewrite would be lost at the next sync.
+Do not edit a copied folder. A workflow in `.github/workflows/` copies the upstream folder once a week. If the copy differs, the workflow opens a pull request. Read the diff, then merge it. The prose of a copied skill is not in ASD-STE100, because a rewrite would be lost at the next sync. Known problems in a copy that are not corrected upstream yet are listed in its `UPSTREAM.md`, which the sync keeps.
 
 ## Add a skill
 
