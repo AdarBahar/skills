@@ -29,7 +29,7 @@ State the scope at the start of the report. If the scope is too large, review on
 
 Look in this order:
 
-1. A design-system skill for this project (for example `portfolio-tracker-design`). If one exists, load it. Its rules override Step 4.
+1. A design-system skill for this project (for example a `<project>-design` skill). If one exists, load it. Its rules override Step 4.
 2. Project documents: `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `DESIGN*.md`, `STYLEGUIDE*`, `docs/UI-RULES.md`, Storybook docs.
 3. Design tokens: `tailwind.config.*`, CSS custom properties (`:root { --... }`), `theme.ts`, `globals.css`.
 4. The shared component library: `components/ui/`, `components/common/`, or similar.
