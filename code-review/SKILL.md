@@ -8,9 +8,9 @@ Do a code review of the given pull request.
 
 ## Models
 
-- A "Haiku agent" is a subagent with `model: haiku` (Haiku 5.5). Use it for checks, lists, summaries, and scores.
-- A "Sonnet agent" is a subagent with `model: sonnet` (Sonnet 5.5). Use it for the review agents.
-- An "Opus agent" is a subagent with `model: opus` (Opus 5.5). Use it only for the two deep review agents of the full review (step 4, agents #2 and #3).
+- A "Haiku agent" is a subagent with `model: haiku`, the fastest and cheapest tier. Use it for checks, lists, summaries, and scores.
+- A "Sonnet agent" is a subagent with `model: sonnet`, the middle tier. Use it for the review agents.
+- An "Opus agent" is a subagent with `model: opus`, the tier for deep reasoning. Use it only for the two deep review agents of the full review (step 4, agents #2 and #3).
 - Set the model in each subagent call. Do not use the default model.
 - Do not change these models. If a model is not available, use the session model and say so in the review.
 
