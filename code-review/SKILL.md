@@ -6,6 +6,12 @@ allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), 
 
 Do a code review of the given pull request.
 
+## Models
+
+- A "Haiku agent" is a subagent with `model: haiku` (Haiku 5.5). Use it for checks, lists, summaries, and scores.
+- A "Sonnet agent" is a subagent with `model: sonnet` (Sonnet 5.5). Use it for the review agents.
+- Do not change these models. If a model is not available, use the session model and say so in the review.
+
 ## Choosing the depth
 
 This skill has two modes. Choose the mode in this order:

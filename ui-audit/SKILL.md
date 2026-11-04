@@ -19,6 +19,7 @@ This skill gives findings and proposed fixes only. It never changes the project.
 - Do not open issues, PRs, or comments unless the user asks.
 - In the browser, only look, scroll, resize, and press Tab. Do not submit forms, save, delete, or click actions that change data. The app can be signed in to real data.
 - Temporary files (an export of a branch, a test page) go in a scratch folder outside the repository. Delete them at the end and say so in the report.
+- Tell each subagent that you start to change nothing. These rules apply to it too.
 
 At the end of the report, ask the user which findings to fix. A fix is a separate task that starts only when the user asks for it.
 
@@ -67,6 +68,8 @@ Write a short summary of the rulebook:
 
 Name the documents that you found, or say that there are none. If the project has no rulebook, get the rules from the existing pages. Offer to write `docs/UI-RULES.md` from the summary.
 
+**Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet` (Sonnet 5.5). Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
+
 ## Step 3: New feature, page, or element in an existing UI
 
 When the UI already exists, consistency has priority over Step 4.
@@ -110,7 +113,20 @@ Use these rules only when the rulebook does not cover a topic, or when you build
 11. **Direction:** For Hebrew or another RTL language, use logical properties (`ms-`, `me-`, `ps-`, `pe-`, `margin-inline-start`). Wrap mixed-direction values in `<bdi>`.
 12. **Copy:** Buttons start with a verb. Errors tell the user how to correct the problem. Empty states tell the user the next step.
 
-For mechanical checks, read [detection-patterns.md](detection-patterns.md). Search the code for each pattern. A "failure" pattern can be a finding. A "hygiene" pattern becomes a finding only when you show a failure. If not, put it under **Notes** in the report.
+### Mechanical checks
+
+The mechanical checks use the fixed list in [detection-patterns.md](detection-patterns.md). Run each pattern on each run, so that two runs give the same coverage.
+
+1. If you can start subagents, start one subagent with `model: haiku` (Haiku 5.5). Give it:
+   - The full text of `detection-patterns.md`.
+   - The folder to search (the repository, or the scratch export from Step 1) and the files in scope.
+   - These instructions: "Search for each pattern ID. For each ID, return the matches as `path:line` with the matched text, or 'no match'. Do not skip an ID. Do not judge the matches. Change nothing."
+2. If you cannot start subagents, do the same search yourself, ID by ID.
+3. Check that the result has every pattern ID. Run the search again for each missing ID.
+4. Confirm each match yourself in context. The subagent finds leads. It never decides a finding or its severity.
+5. A "Failure" match that you confirm is a finding. A "Hygiene" match becomes a finding only when you show a failure. If not, put it under **Notes** in the report.
+
+Some rules need judgment, not a search: rule 3 (one primary action), rule 7 (color as the only signal), and rule 12 (copy). Check them yourself while you read the pages in scope.
 
 ## Step 5: Severity
 
@@ -164,6 +180,15 @@ Mark each fix that changes a shared token, a shared component, or other pages. T
 
 ## Step 8: Verify
 
+**Find the app first.** Do not mark the browser checks `Not verified` before you do these steps:
+
+1. List all local listening ports: `lsof -nP -iTCP -sTCP:LISTEN`. Include SSH tunnels (the command is `ssh`). A dev server on another machine often has a tunnel to a local port.
+2. For each likely port, open the page. Compare its title or a visible feature with the code in scope. A port can serve a different project.
+3. If no port serves the app, ask the user for the URL. Then wait for the answer.
+4. Mark the browser checks `Not verified` only when the user has no URL, or the app does not load.
+
+State the URL that you used, and which commit it serves, if you can find it.
+
 Without a browser, check the code only. With a browser (Claude in Chrome or the `run` skill), check these:
 
 - The widths that the page supports, and 320px.
@@ -201,7 +226,17 @@ Mark each check that you did not run as `Not verified`. Do not report a visual r
 
 The `Status` column is necessary only for a change review. Keep each cell short. If a `Before` or `After` value is longer than a few words, write "see below" in the cell. Then put the full value in a numbered list under the table. List the values that you rounded to a token. If there are no findings, write "No actionable UI findings."
 
-**What passed:** a short list of the checks that found no problem.
+**Coverage:** one row for each Step 4 rule (1 to 12) and one row for each Failure pattern ID in `detection-patterns.md`. Do not omit a row.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Rule 5: Target size | Finding | `.icon-button.small` 26px, see finding 4 |
+| A1: `outline: none` with no replacement | Clear | 3 matches, each has a `focus-visible` style |
+| L5: physical properties on an RTL page | Not checked | The app has no RTL page |
+
+- `Finding`: a row in the findings table.
+- `Clear`: you checked and found no problem. Give the evidence: the search, the files, or the browser check.
+- `Not checked`: give the reason. A check that does not apply (for example, RTL on a page with no RTL) is `Not checked` with the reason "does not apply".
 
 **Notes:** hygiene pattern matches with no failure that you showed (see `detection-patterns.md`). Put them on one line each. They are not findings.
 
