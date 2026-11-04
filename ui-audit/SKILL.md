@@ -70,7 +70,7 @@ Write a short summary of the rulebook:
 
 Name the documents that you found, or say that there are none. If the project has no rulebook, get the rules from the existing pages. Offer to write `docs/UI-RULES.md` from the summary.
 
-**Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet` (Sonnet 5.5). Set the model in the call. Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
+**Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet`. Set the model in the call. Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
 
 ## Step 3: New feature, page, or element in an existing UI
 
@@ -119,7 +119,7 @@ Use these rules only when the rulebook does not cover a topic, or when you build
 
 The mechanical checks use the fixed list in [detection-patterns.md](detection-patterns.md). Run each pattern on each run, so that two runs give the same coverage.
 
-1. If you can start subagents, start one subagent with `model: haiku` (Haiku 5.5). Set the model in the call. Do not use the default model. Give it:
+1. If you can start subagents, start one subagent with `model: haiku`. Set the model in the call. Do not use the default model. Give it:
    - The full text of `detection-patterns.md`.
    - The folder to search (the repository, or the scratch export from Step 1) and the files in scope, including the shared components and their style rules.
    - These instructions: "Search for each pattern ID. For each ID, return the matches as `path:line` with the matched text, or 'no match'. Do not skip an ID. Do not judge the matches. Change nothing."
@@ -252,7 +252,7 @@ The `Status` column is necessary only for a change review. Keep each cell short.
 
 **Notes:** hygiene pattern matches with no failure that you showed (see `detection-patterns.md`). Put them on one line each. They are not findings.
 
-**Verification:** each check, the command or steps, and the result. Name each subagent that you started, with its model (for example "pattern search: Haiku 5.5"). If a subagent did not use the model that this skill names, say so. List the `Not verified` checks separately.
+**Verification:** each check, the command or steps, and the result. Name each subagent that you started, with the model that ran (for example "pattern search: `haiku`"). If a subagent did not use the model that this skill names, say so. List the `Not verified` checks separately.
 
 **Verdict:**
 - `Block`: one or more HIGH findings remain.

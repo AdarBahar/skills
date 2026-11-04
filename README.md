@@ -76,6 +76,6 @@ Do not edit a copied folder. A workflow in `.github/workflows/` copies the upstr
 ## Add a skill
 
 1. Make a new folder with the name of the skill.
-2. Write the `SKILL.md` file. Start it with a `name` and a `description`. Claude uses the description to select the skill.
+2. Write the `SKILL.md` file. Start it with a `name` and a `description`. Claude uses the description to select the skill. If the skill starts subagents, select each model only by its alias (`haiku`, `sonnet`, `opus`, `fable`), with no version number.
 3. Add a `README.md` that tells people what the skill does and how to use it.
 4. Add a line to the index above.
