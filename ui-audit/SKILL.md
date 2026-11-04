@@ -18,7 +18,10 @@ This skill gives findings and proposed fixes only. It never changes the project.
 - Do not change shared tokens, components, settings, or dependencies.
 - Do not open issues, PRs, or comments unless the user asks.
 - In the browser, only look, scroll, resize, and press Tab. Do not submit forms, save, delete, or click actions that change data. The app can be signed in to real data.
+- To check another theme, set the theme class or attribute on the page with JavaScript (for example `document.documentElement.classList.toggle("dark")`). Do not use the app's theme setting, because it saves the choice. Set the page back at the end.
 - Temporary files (an export of a branch, a test page) go in a scratch folder outside the repository. Delete them at the end and say so in the report.
+- Close each browser tab that the audit opened. If a tab stays open, name it in the report.
+- Stop each process that the audit started (for example a dev server). Say so in the report.
 - Tell each subagent that you start to change nothing. These rules apply to it too.
 
 At the end of the report, ask the user which findings to fix. A fix is a separate task that starts only when the user asks for it.
@@ -41,7 +44,16 @@ State the scope at the start of the report. If the scope is too large, run the m
 
 **Shared components are in scope.** A screen uses shared components that are in other files: modal, dialog, side panel, menu, toast, table, form fields. Find the shared components that the screens in scope import or open. Add their component files and their style rules to the scope. A problem in a shared component is a problem on each screen that uses it.
 
+**Exclude dead code.** A component or style file that no page imports or opens is dead code. Do not review it, and do not report its pattern matches. List the dead files in the scope, so the user can remove them.
+
 **Make sure that you review the current code:**
+
+If the project has no git repository, do these steps instead of the git steps below:
+
+1. State that there is no repository, and state the date of the last change of the files in scope.
+2. If a server serves the files, compare a hash of each local file with a hash of the served file (for example `md5`). If they match, say so. If they do not match, say which version your browser results come from.
+
+With a git repository:
 
 1. Run `git fetch`. Compare the local branch with `origin/<default-branch>` (`git rev-list --left-right --count HEAD...origin/<default-branch>`).
 2. If the local branch is behind, tell the user. For a screen review, review `origin/<default-branch>`. Read it with `git show` or `git archive` into a scratch folder outside the repository. Do not check it out.
@@ -69,6 +81,8 @@ Write a short summary of the rulebook:
 - Vocabulary: the words that the UI uses for the same things.
 
 Name the documents that you found, or say that there are none. If the project has no rulebook, get the rules from the existing pages. Offer to write `docs/UI-RULES.md` from the summary.
+
+**Stale documents.** Compare each design document with the code: the token values, the fonts, and the components. If a document does not match the code, it is stale. Then the code is the rulebook. Report the stale document as a LOW finding, with the values that differ.
 
 **Subagent.** If you can start subagents, give items 2 to 5 to one subagent with `model: sonnet`. Set the model in the call. Tell it to write the summary above, with a file and line for each rule, and to change nothing. Load the design-system skill (item 1) yourself. Read the token values yourself, because the contrast check needs the exact values.
 
@@ -195,8 +209,9 @@ Mark each fix that changes a shared token, a shared component, or other pages. T
 
 1. List all local listening ports: `lsof -nP -iTCP -sTCP:LISTEN`. Include SSH tunnels (the command is `ssh`). A dev server on another machine often has a tunnel to a local port.
 2. For each likely port, open the page. Compare its title or a visible feature with the code in scope. A port can serve a different project.
-3. If no port serves the app, ask the user for the URL. Then wait for the answer.
-4. Mark the browser checks `Not verified` only when the user has no URL, or the app does not load.
+3. If no port serves the app, ask the user for the URL. In the same question, offer to start a local dev server from the checkout. Then wait for the answer.
+4. Start a dev server only after the user says yes. Use the project's own dev command on a free port (for example `npx vite --port <free port> --strictPort`). Write its log to the scratch folder. If the checkout is not the reviewed commit, compare the files in scope first, and say which code the server runs. Stop the server at the end.
+5. Mark the browser checks `Not verified` only when the user has no URL, does not want a dev server, or the app does not load.
 
 State the URL that you used, and which commit it serves, if you can find it.
 
@@ -258,4 +273,4 @@ The `Status` column is necessary only for a change review. Keep each cell short.
 - `Block`: one or more HIGH findings remain.
 - `Approve`: no HIGH findings remain. MEDIUM and LOW findings stay in the table as work to do.
 
-**Next step:** Name the temporary files that you deleted. Then ask the user which findings to fix. Do not start a fix in the same turn.
+**Next step:** Name the temporary files that you deleted, the tabs that you closed, and the processes that you stopped. Then ask the user which findings to fix. Do not start a fix in the same turn.
