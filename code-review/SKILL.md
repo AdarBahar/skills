@@ -158,7 +158,6 @@ Notes:
 
 - Do not check the build signal. Do not try to build or typecheck the app. These run separately and are not relevant to your code review.
 - Use `gh` to work with Github (for example to get a pull request, or to create inline comments). Do not use web fetch.
-- Make a todo list first.
 - Do not invent findings. If no finding passes, say so.
 - Give each finding a severity, the problem, a reproduction where it helps, and a concrete fix. Write it so another agent can fix it without questions.
 - You must cite and link each bug (for example, if you refer to a CLAUDE.md, you must link it).

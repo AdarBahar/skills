@@ -1,7 +1,8 @@
 name: Sync react-best-practices from upstream
 
 # Copies skills/react-best-practices from vercel-labs/agent-skills into
-# react-best-practices/. Opens a pull request when the copy differs.
+# react-best-practices/, without AGENTS.md (see UPSTREAM.md). Opens a pull
+# request when the copy differs.
 # A person reads the diff and merges it. Nothing lands on main by itself.
 
 on:
@@ -36,7 +37,7 @@ jobs:
 
       - name: Copy the folder
         run: |
-          rsync -a --delete --exclude UPSTREAM.md "/tmp/upstream/${UPSTREAM_PATH}/" "${LOCAL_PATH}/"
+          rsync -a --delete --exclude UPSTREAM.md --exclude AGENTS.md "/tmp/upstream/${UPSTREAM_PATH}/" "${LOCAL_PATH}/"
           git add -A "${LOCAL_PATH}"
           if git diff --cached --quiet; then
             echo "CHANGED=0" >> "$GITHUB_ENV"

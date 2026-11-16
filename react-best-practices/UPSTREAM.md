@@ -6,6 +6,8 @@ Do not edit the files in this folder, except this one. A GitHub Actions workflow
 
 The sync keeps this file. It removes every other file that upstream no longer has.
 
+The sync does not copy `AGENTS.md`. That file is a compiled copy of `rules/` (3,810 lines). Claude Code loads it into each session that reads a file in this folder, and it omits six code examples that the rule files have. Use `SKILL.md` and the files in `rules/`.
+
 ## Known issues in the upstream copy
 
 A review of this repository on 2026-11-04 (at commit `0094864`) found these problems in the upstream files. They are not corrected here, because a local edit is lost at the next sync. When you use a rule below, apply the correction yourself. When a sync PR changes one of these files, check if upstream corrected the problem, and remove its row.
@@ -23,4 +25,4 @@ Findings 9 and 10 were compared with the upstream `main` branch on 2026-11-04. B
 | P2 | `rules/js-flatmap-filter.md:25–27, 40–42` | The `flatMap` version keeps falsy values that `.filter(Boolean)` removed, so the result changes. | Keep the truthiness check on the mapped value. |
 | P2 | `rules/js-cache-storage.md:48–50` | `c.split('=')` cuts a cookie value at every `=`. `abc=def==` becomes `abc`. | Split each cookie only at the first `=`. Split pairs on `;` and trim spaces. |
 | P2 | `rules/client-swr-dedup.md:48` | `import { useSWRMutation } from 'swr/mutation'`. The hook is the default export. | `import useSWRMutation from 'swr/mutation'`. |
-| P3 | `AGENTS.md:3746–3763` | The compiled guide drops six code examples from the rule files, for example the `useRef` version in `rules/advanced-event-handler-refs.md` that works with React 18. | Read the rule file in `rules/` when `AGENTS.md` and the rule do not agree. |
+| P3 | `SKILL.md:149` | The line points to `AGENTS.md`, which this copy does not have. | Read the rule file in `rules/`. |
