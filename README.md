@@ -1,49 +1,52 @@
-# Skills
+# Claude Skills
 
-Skills for [Claude](https://claude.com) that I share.
+This is my collection of Claude skills for code reviews, refactoring, security audits, and UI checks.
 
-## Purpose
+I build some myself, adapt others, and maintain copies of useful third-party skills. Each skill focuses on a specific development task.
 
-A skill is a set of instructions that teaches Claude how to do one type of task.
-Each skill is in its own folder. The folder has a `SKILL.md` file, which contains the steps that Claude follows. If necessary, the folder also has reference files.
+## Available skills
 
-## Benefits
+Each name links to the skill folder. Each folder has a `README.md` with the full details and a `SKILL.md` file with the steps that Claude follows.
 
-- **The same result each time.** Claude follows the same tested steps. It does not make a new plan for each request.
-- **Safe defaults.** The skills verify their work. They ask before a risky change.
-- **Easy to use.** You ask in plain words. Claude finds the correct skill. You do not have to type its name.
-- **Works in two apps.** Use the skills in Claude Code and in Cowork (the Claude desktop app).
+| Skill | Purpose | Origin | Example request |
+|---|---|---|---|
+| [code-review](./code-review) | Reviews a pull request with independent agents. It posts only the findings that pass a confidence filter. | Adapted | "Review PR #42." |
+| [code-optimization](./code-optimization) | Refactors code to make it easier to maintain. It does not change what the code does. It works on a branch and opens a PR. | Original | "Optimize this project for maintainability." |
+| [security-audit](./security-audit) | Finds vulnerabilities that cross a trust boundary. It gives the source evidence, a safe reproduction, a priority, and a fix. | Adapted | "Find security issues in ./src." |
+| [ui-audit](./ui-audit) | Checks that UI code fits the existing design rules. It also checks basic UI, UX, and accessibility quality. It is read-only. | Adapted | "Audit the dashboard UI." |
+| [react-best-practices](./react-best-practices) | Applies the React and Next.js performance rules from Vercel. | Third-party | "Review this React component for performance." |
 
-## Index of skills
+Origin:
 
-| Skill | Function | Example request |
-|---|---|---|
-| [code-review](./code-review) | Reviews a pull request with a panel of independent agents. It scores each finding and posts only the findings that pass. A full review uses five checks and gives a merge verdict. A quick review uses one or two. If you name no mode, it picks the depth from the size of the PR. | "Review PR #42." · "Run a quick code review on this PR." |
-| [code-optimization](./code-optimization) | Makes code easier to maintain. It finds the files to improve and makes issues. It refactors on a work branch with tests before and after, and it opens a PR. It does not change what the code does. It does not weaken security. | "Optimize this project for maintainability." |
-| [security-audit](./security-audit) | Audits code for security vulnerabilities that cross a trust boundary. It gives the source evidence, a safe reproduction, a priority, and a fix. Full audits write reports. It never runs target code without a sandbox. It never touches a production host without approval. Adapted from Cloudflare's MIT-licensed skill. | "Security audit this codebase." · "Find security issues in ./src." |
-| [ui-audit](./ui-audit) | Audits UI code. It makes sure that a new feature, page, or element fits the existing UI rulebook (design system, tokens, shared components). It also checks basic UI/UX and accessibility quality. It is read-only: it reports findings with evidence and gives a verdict, and it never changes the project. Adapted in part from jakubkrehel/skills (MIT). | "Add a settings page that fits the rest of the app." · "Audit the dashboard UI." |
-| [react-best-practices](./react-best-practices) | React and Next.js performance rules from Vercel. A copy of a third-party skill. See "Third-party skills" below. | "Review this React component for performance." |
+- **Original.** I wrote the skill.
+- **Adapted.** I changed a skill from another author. The credit is in the folder README and in the attribution section below.
+- **Third-party.** A copy of a skill from another repository. I do not edit it by hand.
 
-Each skill folder has a README with the full details.
-
-## How to use
+## Installation
 
 ### Claude Code
 
-1. Copy or link the skill folder into `~/.claude/skills/` (all projects) or `.claude/skills/` (one project).
-2. Restart Claude Code.
-3. Ask for the task in plain words.
+Install one skill. Copy or link its folder into `~/.claude/skills/` (all projects) or `.claude/skills/` (one project). Then restart Claude Code.
 
-To get all the skills and their updates, clone this repository and link each folder:
+Install the complete collection. Clone this repository and link each folder:
 
 ```bash
 git clone https://github.com/AdarBahar/skills.git ~/Code/skills/adar-skills
+mkdir -p ~/.claude/skills
 for d in ~/Code/skills/adar-skills/*/; do
   ln -sfn "${d%/}" ~/.claude/skills/"$(basename "$d")"
 done
 ```
 
-Then run `git pull` in the clone to get the newest version.
+To install only one skill from the clone, run one `ln` command. For example:
+
+```bash
+ln -sfn ~/Code/skills/adar-skills/code-review ~/.claude/skills/code-review
+```
+
+To get the newest version, run `git pull` in the clone. The links keep working.
+
+Ask for the task in plain words. Claude selects the skill from its description.
 
 ### Cowork (Claude desktop app)
 
@@ -57,25 +60,42 @@ Then run `git pull` in the clone to get the newest version.
 2. Open the `.skill` file in Cowork.
 3. Click **Save skill**.
 
-### Requirements
+## Usage examples
+
+**Review a pull request.** In a repository with the GitHub CLI, ask: "Review PR #42." Claude runs `code-review` and posts one comment with the findings that pass the filter. Ask for a quick review to use one or two agents.
+
+**Find security vulnerabilities.** Ask: "Find security issues in ./src." Claude runs `security-audit` in guidance mode and writes no files. Ask for a full audit to get reports in a folder outside the target.
+
+**Improve maintainability.** Ask: "Optimize this project for maintainability." Claude runs `code-optimization`. It files the issues, makes the changes on a branch, runs the tests, and opens a PR for review.
+
+**Check UI consistency.** Ask: "Add a settings page that fits the rest of the app." Claude runs `ui-audit`. It compares the new page with the design rules and the nearby pages, then reports findings. It does not change the project.
+
+## Requirements
 
 - `code-review` needs the [GitHub CLI](https://cli.github.com) (`gh auth login`).
-- `code-optimization` works with GitHub (`gh`), GitLab (`glab`) or an issue tracker connector. If none is available, it writes the issues as Markdown files.
+- `code-optimization` works with GitHub (`gh`), GitLab (`glab`), or an issue tracker connector. If none is available, it writes the issues as Markdown files.
 - `security-audit` needs [Node.js](https://nodejs.org) for its validators. It needs an isolated sandbox to run any target code.
 
-## Third-party skills
-
-Some folders are copies of skills from other repositories. Each one has an `UPSTREAM.md` file that names the source and the license.
+## Third-party skills and attribution
 
 | Folder | Source | License |
 |---|---|---|
 | `react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), folder `skills/react-best-practices` | MIT |
 
-Do not edit a copied folder. A workflow in `.github/workflows/` copies the upstream folder once a week. If the copy differs, the workflow opens a pull request. Read the diff, then merge it. The prose of a copied skill is not in ASD-STE100, because a rewrite would be lost at the next sync. Known problems in a copy that are not corrected upstream yet are listed in its `UPSTREAM.md`, which the sync keeps.
+`react-best-practices` is a copy. Each copied folder has an `UPSTREAM.md` file that names the source and the license. A GitHub Actions workflow in `.github/workflows/` copies the upstream folder once a week. If the copy differs, the workflow opens a pull request. Read the diff, then merge it. Do not edit a copied folder by hand, because the next sync replaces the change. Known problems in the copy that upstream does not fix yet are listed in its `UPSTREAM.md`.
 
-## Add a skill
+Adapted skills:
+
+- `security-audit` is adapted from [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill). The license is MIT, and the original license text is in its `LICENSE` file.
+- `ui-audit` includes rules adapted from [jakubkrehel/skills](https://github.com/jakubkrehel/skills). The license is MIT, and the original license text is in its `LICENSE` file.
+
+## Adding or updating skills
+
+To add a skill:
 
 1. Make a new folder with the name of the skill.
 2. Write the `SKILL.md` file. Start it with a `name` and a `description`. Claude uses the description to select the skill. If the skill starts subagents, select each model only by its alias (`haiku`, `sonnet`, `opus`, `fable`), with no version number.
 3. Add a `README.md` that tells people what the skill does and how to use it.
-4. Add a line to the index above.
+4. Add a line to the skills table above. Give its origin.
+
+To update a copied skill, merge the sync pull request. To update an original or adapted skill, change its files and open a pull request.
